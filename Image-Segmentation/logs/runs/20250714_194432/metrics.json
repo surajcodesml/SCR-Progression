@@ -1,0 +1,13 @@
+{
+    "best_test_loss": 26788.41796875,
+    "final_train_loss": 21591.306640625,
+    "final_test_mae": 150.55206298828125,
+    "training_history": [
+        {
+            "epoch": 0,
+            "train_loss": 21591.306640625,
+            "test_loss": 26788.41796875,
+            "test_mae": 150.55206298828125
+        }
+    ]
+}

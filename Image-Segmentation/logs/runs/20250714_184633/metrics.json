@@ -1,0 +1,67 @@
+{
+    "best_test_loss": Infinity,
+    "final_train_loss": NaN,
+    "final_test_mae": NaN,
+    "training_history": [
+        {
+            "epoch": 0,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 1,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 2,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 3,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 4,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 5,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 6,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 7,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 8,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        },
+        {
+            "epoch": 9,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        }
+    ]
+}
