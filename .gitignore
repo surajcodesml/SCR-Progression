@@ -210,9 +210,25 @@ __marimo__/
 *.xls
 *.xlsx
 
+#ignore hdf5py datasets
 *.h5
 *.hdf5  
 *.hdf
 *.hdf5.gz
 
-*.code-workspace
+# ignore image files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.tiff
+*.bmp
+*.webp
+*.svg
+*.ico
+*.tif
+
+#ignore .txt files
+*.txt
+*.csv
+*.tsv
