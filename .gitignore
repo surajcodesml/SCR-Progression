@@ -232,3 +232,6 @@ __marimo__/
 *.txt
 *.csv
 *.tsv
+
+#ignore pdf files
+*.pdf
