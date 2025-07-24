@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 import os
+from skimage.filters import threshold_otsu
+from skimage.util import view_as_windows
 
 # Functions for image preprocessing
 def binary_threshold(image: np.ndarray, threshold=127) -> np.ndarray:
