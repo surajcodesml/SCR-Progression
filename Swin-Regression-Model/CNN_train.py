@@ -87,7 +87,7 @@ if __name__ == "__main__":
     print(f"Output shape: (224, 2)")
     model.summary()
 
-    with h5py.File('/home/suraj/Git/SCR-Progression/Duke_Control_processed.h5', 'r') as f:
+    with h5py.File('/home/skumar/Git/SCR-Progression/Duke_Control_processed.h5', 'r') as f:
         images = f['images'][:]  # shape: (N, 224, 224)
         layer_maps = f['layer_maps'][:]  # shape: (N, 224, 2) or (N, 224, 3)
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     test_dataset = tf.data.Dataset.from_tensor_slices((X_test, y_test)).batch(32)
 
     # TensorBoard callback
-    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    log_dir = "/home/skumar/Git/SCR-Progression/Swin-Regression-Model/logs/fit" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
     # Train model
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     print(f"Test MSE: {test_loss}")
 
     #To save the model
-    model.save('CNN_regression_model_with_preprocessed_image.h5')
+    model.save('CNN_regression_model.h5')
 
     #TO load the model later
     #model = tf.keras.models.load_model('CNN_regression_model_with_preprocessed_image.h5')
@@ -137,5 +137,5 @@ if __name__ == "__main__":
         y_test, 
         num_samples=5, 
         save_dir=log_dir, 
-        model_name="CNN_regression_model_with_preprocessed_image"
+        model_name="CNN_regression_model"
     )
