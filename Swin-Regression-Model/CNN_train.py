@@ -5,6 +5,9 @@ from transformers import TFSwinModel
 import datetime
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from tensorflow.keras import mixed_precision
+mixed_precision.set_global_policy('mixed_float16')
+
 print(tf.__version__)
 
 # Create a simple CNN model for layer annotation prediction
@@ -96,15 +99,15 @@ if __name__ == "__main__":
     layer_maps = layer_maps[:, :, [0, 2]]  # if shape is (N, 224, 3)
 
     #TEST :: Comment out below when training with full dataset
-    images = images[:1000]
-    layer_maps = layer_maps[:1000]
+    #images = images[:1000]
+    #layer_maps = layer_maps[:1000]
 
     X_train, X_test, y_train, y_test = train_test_split(
         images, layer_maps, test_size=0.2, random_state=42
     )
 
-    train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(16).shuffle(100)
-    test_dataset = tf.data.Dataset.from_tensor_slices((X_test, y_test)).batch(16)
+    train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(32).shuffle(1000)
+    test_dataset = tf.data.Dataset.from_tensor_slices((X_test, y_test)).batch(32)
 
     # TensorBoard callback
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -113,7 +116,7 @@ if __name__ == "__main__":
     # Train model
     model.fit(train_dataset,
             validation_data=test_dataset, 
-            epochs=5, 
+            epochs=50, 
             callbacks=[tensorboard_callback])
 
     # Evaluate model
