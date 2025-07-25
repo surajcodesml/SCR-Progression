@@ -83,6 +83,46 @@ def plot_layer_annotations(model, images, layer_maps, num_samples=5, save_dir=No
         plt.show()
         plt.close()
 
+def mae_metric(pred, target)-> float:
+    '''
+    Mean Absolute Error
+    args: 
+        pred (Tensor)
+        target (Tensor)
+    returns:
+        Mean Absolute Error as a float
+    '''
+    return torch.mean(torch.abs(pred - target)).item()
+
+def lines_to_mask(lines, height=224, width=224):
+    # lines: (batch, width, 2) - for each x, y1 and y2
+    # Returns: (batch, 2, height, width) binary masks for ILM and BM
+    batch = lines.shape[0]
+    mask = torch.zeros((batch, 2, height, width), device=lines.device)
+    for b in range(batch):
+        for i in range(2):  # ILM and BM
+            y_coords = torch.clamp(lines[b, :, i].round().long(), 0, height-1)
+            mask[b, i, y_coords, torch.arange(width)] = 1
+    return mask
+
+def dice_coefficient(pred_mask, target_mask, eps=1e-6):
+    # pred_mask, target_mask: (batch, 2, H, W)
+    intersection = (pred_mask * target_mask).sum(dim=(2,3))
+    union = pred_mask.sum(dim=(2,3)) + target_mask.sum(dim=(2,3))
+    dice = (2 * intersection + eps) / (union + eps)
+    return dice.mean().item()
+
+def precision_recall_f1(pred_mask, target_mask, eps=1e-6):
+    # pred_mask, target_mask: (batch, 2, H, W)
+    tp = (pred_mask * target_mask).sum(dim=(2,3))
+    fp = (pred_mask * (1 - target_mask)).sum(dim=(2,3))
+    fn = ((1 - pred_mask) * target_mask).sum(dim=(2,3))
+    precision = (tp + eps) / (tp + fp + eps)
+    recall = (tp + eps) / (tp + fn + eps)
+    f1 = (2 * precision * recall + eps) / (precision + recall + eps)
+    return precision.mean().item(), recall.mean().item(), f1.mean().item()
+
+
 if __name__ == "__main__":
     # Load data
     with h5py.File('/home/skumar/Git/SCR-Progression/Duke_Control_processed.h5', 'r') as f:
@@ -92,6 +132,16 @@ if __name__ == "__main__":
     if images.ndim == 3:
         images = np.expand_dims(images, axis=-1)
     layer_maps = layer_maps[:, :, [0, 2]]  # Only ILM and BM
+
+    
+    # Shuffle the dataset
+    indices = np.random.permutation(len(images))
+    images = images[indices]
+    layer_maps = layer_maps[indices]
+    
+    # Limit to 1000 images for training
+    images = images[:1000]
+    layer_maps = layer_maps[:1000]
 
     # Split data
     dataset = LayerAnnotationDataset(images, layer_maps)
@@ -107,6 +157,100 @@ if __name__ == "__main__":
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
+
+    # Tracking lists
+    train_losses = []
+    val_losses = []
+    val_f1s = []
+    val_precisions = []
+    val_recalls = []
+
+    n_epochs = 50
+    for epoch in range(n_epochs):
+        model.train()
+        train_loss = 0
+        for imgs, targets in train_loader:
+            imgs, targets = imgs.to(device), targets.to(device)
+            optimizer.zero_grad()
+            outputs = model(imgs)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+            train_loss += loss.item() * imgs.size(0)
+        train_loss /= n_train
+        train_losses.append(train_loss) # Track training loss
+
+        # Validation loop
+        model.eval()
+        val_loss = 0
+        all_outputs = []
+        all_targets = []
+        with torch.no_grad():
+            for imgs, targets in test_loader:
+                imgs, targets = imgs.to(device), targets.to(device)
+                outputs = model(imgs)
+                loss = criterion(outputs, targets)
+                val_loss += loss.item() * imgs.size(0)
+                all_outputs.append(outputs.cpu())
+                all_targets.append(targets.cpu())
+        val_loss /= n_test
+        val_losses.append(val_loss) # Track validation loss
+
+        # Concatenate all outputs/targets for metrics
+        all_outputs = torch.cat(all_outputs, dim=0)
+        all_targets = torch.cat(all_targets, dim=0)
+
+        # As these metrics are used to measure performance for masks, we are converting lines to masks
+        # and then calculating the metrics
+        pred_mask = lines_to_mask(all_outputs)
+        target_mask = lines_to_mask(all_targets)
+        dice = dice_coefficient(pred_mask, target_mask)
+        precision, recall, f1 = precision_recall_f1(pred_mask, target_mask)
+        val_f1s.append(f1)
+        val_precisions.append(precision)
+        val_recalls.append(recall)
+
+        print(f"Epoch {epoch+1}/{n_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, F1: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
+
+    # Plot Loss vs Epoch
+    plt.figure()
+    plt.plot(range(1, n_epochs+1), train_losses, label='Train Loss')
+    plt.plot(range(1, n_epochs+1), val_losses, label='Val Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss vs Epoch')
+    plt.legend()
+    plt.savefig('loss_vs_epoch.png')
+    plt.show()
+
+    # Plot F1 vs Epoch
+    plt.figure()
+    plt.plot(range(1, n_epochs+1), val_f1s, label='Val F1')
+    plt.xlabel('Epoch')
+    plt.ylabel('F1 Score')
+    plt.title('F1 Score vs Epoch')
+    plt.legend()
+    plt.savefig('f1_vs_epoch.png')
+    plt.show()
+
+    # Plot Precision-Recall Curve (per epoch)
+    plt.figure()
+    plt.plot(val_recalls, val_precisions, marker='o')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve (per epoch)')
+    plt.savefig('precision_recall_curve.png')
+    plt.show()
+
+    '''
+
+    # Tracking lists
+    train_losses = []
+    val_losses = []
+    val_f1s = []
+    val_precisions = []
+    val_recalls = []
+
     # Training loop
     n_epochs = 50
     for epoch in range(n_epochs):
@@ -116,6 +260,7 @@ if __name__ == "__main__":
             imgs, targets = imgs.to(device), targets.to(device)
             optimizer.zero_grad()
             outputs = model(imgs)
+            mae = mae_metric(outputs, targets)
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
@@ -130,11 +275,23 @@ if __name__ == "__main__":
         for imgs, targets in test_loader:
             imgs, targets = imgs.to(device), targets.to(device)
             outputs = model(imgs)
+            mae = mae_metric(outputs, targets)
             loss = criterion(outputs, targets)
             test_loss += loss.item() * imgs.size(0)
     test_loss /= n_test
     print(f"Test MSE: {test_loss:.4f}")
 
+
+
+
+    pred_mask = lines_to_mask(outputs)
+    target_mask = lines_to_mask(targets)
+    dice = dice_coefficient(pred_mask, target_mask)
+    precision, recall, f1 = precision_recall_f1(pred_mask, target_mask)
+    print(f"Test Dice: {dice:.4f}\nPrecision: {precision:.4f}\nRecall: {recall:.4f}\nF1: {f1:.4f}")
+    
+    '''
+    
     # Save model
     torch.save(model.state_dict(), "CNN_regression_model.pth")
 
