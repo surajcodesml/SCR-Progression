@@ -17,6 +17,7 @@ import eyepy as ep
 from pathlib import Path
 from typing import Dict, Tuple
 import logging
+import time
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -163,7 +164,53 @@ class E2EToHDF5Converter:
         
         return info
 
+def main():
+    # Configuration
+    hdf5_output_path = "/home/suraj/Git/SCR-Progression/e2e/Nemours_Jing_RL_Annotated.h5"
+    e2e_folder = "/home/suraj/Git/SCR-Progression/e2e/data"
+    
+    # Initialize converter
+    converter = E2EToHDF5Converter(hdf5_output_path)
+    
+    # Find all .e2e files in the folder
+    e2e_files = [str(f) for f in Path(e2e_folder).glob("*.e2e")]
+    if not e2e_files:
+        logger.error(f"No .e2e files found in folder: {e2e_folder}")
+        return
 
+    logger.info(f"Found {len(e2e_files)} .e2e files in {e2e_folder}")
+
+    # Load already processed filenames if HDF5 exists
+    existing_names = set()
+    if os.path.exists(hdf5_output_path):
+        with h5py.File(hdf5_output_path, "r") as f:
+            if "names" in f:
+                existing_names = set(str(name) for name in f["names"][:])
+
+    # Process each .e2e file
+    for e2e_file in e2e_files:
+        filename = Path(e2e_file).stem
+        if filename in existing_names:
+            logger.info(f"Skipping {e2e_file} (already exists in HDF5)")
+            continue
+        logger.info(f"Converting file: {e2e_file}")
+        try:
+            converter.convert_e2e_file(e2e_file)
+        except Exception as e:
+            logger.error(f"Failed to process {e2e_file}: {e}")
+
+    # Print dataset information
+    info = converter.get_dataset_info()
+    logger.info("Dataset Information:")
+    for key, value in info.items():
+        logger.info(f"  {key}: {value}")
+
+
+if __name__ == "__main__":
+    main()
+
+
+'''
 def main():
     # Configuration
     hdf5_output_path = "/home/suraj/Git/SCR-Progression/e2e/Nemours_Jing_RL_Annotated.h5"
@@ -188,6 +235,4 @@ def main():
     for key, value in info.items():
         logger.info(f"  {key}: {value}")
 
-
-if __name__ == "__main__":
-    main()
+        '''

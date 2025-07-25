@@ -1,3 +1,33 @@
+# E2E to HDF5 Converter Script: e2e_to_hdf5_converter.py
+
+## What does it do?
+
+This script (`e2e_to_hdf5_converter.py`) converts Heidelberg Spectralis OCT `.e2e` files into a single HDF5 file. It extracts raw B-scan images and retinal layer annotations from each `.e2e` file and stores them in a structured, compressed HDF5 dataset. The script can process multiple `.e2e` files in a folder, appending new data while skipping files that have already been processed.
+
+---
+
+## How does it work?
+
+1. **Configuration**:  
+   Set the input folder containing `.e2e` files and the output HDF5 file path in the `main()` function.
+
+2. **Batch Processing**:  
+   The script scans the input folder for all `.e2e` files.
+
+3. **Duplicate Checking**:  
+   Before processing, it checks the HDF5 file for filenames already stored and skips any `.e2e` files that have been processed previously.
+
+4. **Data Extraction**:  
+   For each new `.e2e` file, it extracts:
+   - B-scan images (raw data)
+   - Supported retinal layer annotations (ILM, BM, ELM, PR1, RPE, ONL, OPL, INL, IPL, GCL, NFL)
+   - The source filename
+
+5. **Appending to HDF5**:  
+   The extracted data is appended to the HDF5 file under the following structure:
+
+
+
 # HDF5 Dataset Structure: Nemours_Jing_RL_Annotated.h5
 
 This HDF5 file stores retinal image data and corresponding layer annotations, converted from .e2e files. The structure is organized for easy access and efficient storage.
