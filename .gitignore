@@ -235,3 +235,8 @@ __marimo__/
 
 #ignore pdf files
 *.pdf
+
+#igore log and error files
+*.err
+*.out
+*.v2
