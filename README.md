@@ -97,16 +97,7 @@ The project works with **2 different datasets** of processed OCT B-scan images:
 - **Content**: Annotated B-scan dataset of SCR and Control patients
 - **Conversion**: Use `e2e/e2e_to_hdf5_converter.py` with eyepy library for E2E to HDF5 conversion
 
-## Data Preprocessing Using OpenCV
-- **Folder**: Img-Preprocessing
-
-### Noise Reduction  
-- In Progress...
-
-### Edge Detection  
-- In Progress...
-
-## Data Conversion Tools
+## Data Conversion Scripts
 
 ### MATLAB to HDF5 Conversion
 - **Script**: `hdf5-Convert/mat2hdf5.py`
@@ -117,7 +108,17 @@ The project works with **2 different datasets** of processed OCT B-scan images:
 - **Script**: `e2e/e2e_to_hdf5_converter.py`
 - **Library**: Uses eyepy for E2E file processing
 - **Purpose**: Converts Heidelberg E2E files to standardized HDF5 format
-- **Features**: Extracts B-scan images and layer annotations 
+- **Features**: Extracts B-scan images and layer annotations
+
+## Data Preprocessing Using OpenCV
+- **Folder**: Img-Preprocessing
+
+### Noise Reduction  
+- In Progress...
+
+### Edge Detection  
+- In Progress...
+
 ## Getting Started
 
 ### Prerequisites
@@ -133,52 +134,6 @@ pip install eyepy
 # For experiment tracking
 pip install wandb
 ```
-
-### Data Processing Workflow
-1. **Convert raw data to HDF5**:
-   - For .mat files: `python hdf5-Convert/mat2hdf5.py`
-   - For .e2e files: `python e2e/e2e_to_hdf5_converter.py`
-
-2. **Data exploration**: Use `data_processing.ipynb` for initial data analysis
-
-3. **Model training**: Choose from CNN, SegFormer, or Swin models based on requirements
-
-## Model Performance
-
-- **Loss Function**: Mean Squared Error (MSE)
-- **Evaluation Metrics**:
-  - Mean Absolute Error (MAE)
-  - Dice Score
-  - Precision-Recall
-  - Sensitivity
-- **Tracking**: Experiments tracked using Weights & Biases (wandb)
-
-## Project Features
-
-- **Multi-model approach**: Comparison of CNN, SegFormer, and Swin Transformer architectures
-- **Dual dataset support**: Handles both Duke (.mat) and Nemours (.e2e) datasets  
-- **Automated conversion**: Scripts for converting different data formats to standardized HDF5
-- **Comprehensive evaluation**: Multiple metrics and visualization tools
-- **Experiment tracking**: Integration with wandb for monitoring training progress
-
-## Future Enhancements
-
-- [ ] Model fine-tuning and hyperparameter optimization
-- [ ] Advanced image preprocessing using OpenCV for enhanced results
-- [ ] Model ensemble techniques for improved accuracy
-- [ ] Advanced data augmentation strategies
-- [ ] Integration with clinical workflows
-- [ ] Performance optimization for real-time deployment
-- [ ] Cross-dataset validation and generalization studies
-
-## Contributing
-
-This is an active research project at Nemours Children's Hospital. Contributions and suggestions are welcome for:
-- Model architecture improvements
-- Data preprocessing enhancements  
-- Evaluation metrics and visualization tools
-- Documentation and code organization
-
 ---
 
 *This repository is part of ongoing research in medical image analysis and computer vision for ophthalmology applications at Nemours Children's Hospital.*
