@@ -2,80 +2,42 @@
 
 ## Project Overview
 
-This repository contains machine learning models and tools for automated prediction of retinal layer annotations in Optical Coherence Tomography (OCT) B-scan images. The primary focus is on predicting critical retinal layers, specifically the Inner Limiting Membrane (ILM) and Bruch's Membrane (BM), to assist in medical diagnosis of SCR disease in patients.
-
-This code is part of research work conducted at Nemours Children's Hospital.
+This repository contains models and tools for retinal layer prediction in Optical Coherence Tomography (OCT) B-scan images. The primary focus is on predicting the Inner Limiting Membrane (ILM) and Bruch's Membrane (BM), for now, and try to improve model performance but hyper-parameter tuning and introducing new model architectures.
 
 ## Repository Structure
 
 ```
 SCR-Progression/
-├── CNN-Model/                   # CNN-based regression model implementations
-│   ├── CNN_tensorflow.py        # TensorFlow CNN implementation
-│   ├── CNN_pytorch.py          # PyTorch CNN implementation
-│   └── cnn_data_ops.ipynb      # CNN data operations notebook
-│
-├── SegFormer-Model/            # SegFormer transformer model
-│   └── train_segformer.py      # SegFormer model training script
-│
-├── Swin-Model/                 # Swin Transformer model implementations
-│   ├── swin_model_train.ipynb  # Swin model training notebook
-│   └── swin_model1.ipynb       # Swin model experiments
-│
-├── Swin-Regression-Model/      # Swin regression model experiments
-│   ├── data_ops.ipynb          # Data operations for Swin model
-│   ├── run_cnn_train_.slurm    # SLURM job script for training
-│   └── logs/                   # Training logs and outputs
-│
-├── Image-Segmentation/         # Core segmentation models and training
-│   ├── hdf5_read.ipynb         # HDF5 data reading utilities
-│   ├── evaluation/             # Model evaluation scripts and results
-│   ├── logs/                   # Training logs and metrics
-│   ├── models/                 # Saved model artifacts and checkpoints
-│   └── wandb/                  # Weights & Biases experiment tracking
-│
-├── Annotations-Test-Case/      # Test cases and annotation examples
-│   ├── img_lyr_overlay.ipynb   # Layer overlay visualization
-│   └── 3_R_4_1_Segm.json      # Sample annotation file
-│
-├── e2e/                       # E2E dataset processing
-│   ├── e2e_to_hdf5_converter.py # E2E to HDF5 conversion using eyepy
-│   ├── read_e2e.ipynb         # E2E data reading utilities
-│   ├── data_ops.ipynb         # E2E data operations
-│   └── README.md              # E2E processing documentation
-│
-├── hdf5-Convert/              # Data format conversion tools
-│   ├── mat2hdf5.py             # MATLAB (.mat) to HDF5 conversion script
-│   ├── crop_image.ipynb        # Image cropping utilities
-│   └── README.md               # Conversion tools documentation
-│
-├── Img-Preprocessing/          # Image preprocessing utilities
-│   └── noise_reduction.py      # Noise reduction algorithms
-│
-├── data_processing.ipynb       # Main data processing pipeline
-├── bscan_ILM.6.png            # Sample B-scan image with ILM annotation
-└── README.md                  # This file
+├── CNN-Model/               # CNN regression models (PyTorch, TensorFlow)
+├── SegFormer-Model/         # SegFormer transformer model
+├── Swin-Model/              # Swin Transformer model
+├── Swin-Regression-Model/   # Swin regression experiments
+├── Image-Segmentation/      # Core segmentation models & evaluation
+├── Annotations-Test-Case/   # Test cases & annotation examples
+├── e2e/                     # E2E dataset processing & conversion
+├── hdf5-Convert/            # Data format conversion tools (.mat/.e2e to .h5)
+├── Img-Preprocessing/       # Image preprocessing utilities
+├── data_processing.ipynb    # Main data processing pipeline
+├── bscan_ILM.6.png          # Sample B-scan image
+└── README.md                # Project documentation
 ```
 
 ## Models Implemented
 
-This project implements **3 different models** for retinal layer annotation prediction:
+implementing **3 different models** for retinal layer annotation prediction:
 
 ### 1. CNN Regression Model
-- **Frameworks**: PyTorch and TensorFlow
 - **Architecture**: Convolutional Neural Network with regression head
 - **Purpose**: Baseline model for layer coordinate prediction
 - **Output**: Coordinate points for ILM, BM, and PR1 layers
 - **Files**: `CNN-Model/CNN_pytorch.py`, `CNN-Model/CNN_tensorflow.py`
 
 ### 2. SegFormer Model
-- **Framework**: Hugging Face Transformers
 - **Architecture**: Vision Transformer optimized for segmentation
 - **Purpose**: Transformer-based approach for layer detection
 - **File**: `SegFormer-Model/train_segformer.py`
 
 ### 3. Swin Transformer Model
-- **Framework**: PyTorch with Transformers library
 - **Architecture**: Shifted Window Vision Transformer
 - **Purpose**: Advanced feature extraction using hierarchical vision transformer
 - **Files**: `Swin-Model/swin_model_train.ipynb`, `Swin-Regression-Model/`
@@ -95,33 +57,9 @@ The project works with **2 different datasets** of processed OCT B-scan images:
 - **Source**: Nemours Children's Hospital
 - **Format**: E2E files (Heidelberg OCT format)
 - **Content**: Annotated B-scan dataset of SCR and Control patients
-- **Conversion**: Use `e2e/e2e_to_hdf5_converter.py` with eyepy library for E2E to HDF5 conversion
+- **Conversion**: Use `e2e/e2e_to_hdf5_converter.py` to convert .e2e files to HDF5 format
 
-## Data Conversion Scripts
-
-### MATLAB to HDF5 Conversion
-- **Script**: `hdf5-Convert/mat2hdf5.py`
-- **Purpose**: Converts Duke dataset from .mat format to HDF5
-- **Usage**: Processes MATLAB annotation files and OCT images
-
-### E2E to HDF5 Conversion  
-- **Script**: `e2e/e2e_to_hdf5_converter.py`
-- **Library**: Uses eyepy for E2E file processing
-- **Purpose**: Converts Heidelberg E2E files to standardized HDF5 format
-- **Features**: Extracts B-scan images and layer annotations
-
-## Data Preprocessing Using OpenCV
-- **Folder**: Img-Preprocessing
-
-### Noise Reduction  
-- In Progress...
-
-### Edge Detection  
-- In Progress...
-
-## Getting Started
-
-### Prerequisites
+## Getting Started  
 ```bash
 # Core dependencies
 conda install numpy pandas opencv-python matplotlib h5py
