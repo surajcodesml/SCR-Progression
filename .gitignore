@@ -240,3 +240,6 @@ __marimo__/
 *.err
 *.out
 *.v2
+
+#ignore .e2e files
+*.e2e
