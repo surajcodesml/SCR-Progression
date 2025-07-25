@@ -1,0 +1,6 @@
+
+*.py linguist-detectable=true
+*.ipynb linguist-detectable=true
+*.md linguist-detectable=true
+*.json linguist-detectable=true
+*.txt linguist-detectable=true
