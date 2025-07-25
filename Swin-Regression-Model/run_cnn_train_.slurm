@@ -4,7 +4,6 @@
 #SBATCH --error=logs/cnn_train_%j.err
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --nodelist=
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=24:00:00
