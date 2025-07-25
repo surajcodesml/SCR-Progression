@@ -1,33 +1,9 @@
 
-Annotations-Test-Case/*.py linguist-detectable=true
-Annotations-Test-Case/*.ipynb linguist-detectable=true
-Annotations-Test-Case/*.json linguist-detectable=true
-Annotations-Test-Case/*.txt linguist-detectable=true
-
-e2e/*.py linguist-detectable=true
-e2e/*.ipynb linguist-detectable=true
-
-hdf5-Converter/*.py linguist-detectable=true
-hdf5-Converter/*.ipynb linguist-detectable=true
-
-Image-Segmentation/*.py linguist-detectable=true
-Image-Segmentation/*.ipynb linguist-detectable=true
-Image-Segmentation/*.json linguist-detectable=true
-Image-Segmentation/*.txt linguist-detectable=true
-
-Img-Preprocessing/*.py linguist-detectable=true
-Img-Preprocessing/*.ipynb linguist-detectable=true
-Img-Preprocessing/*.json linguist-detectable=true
-Img-Preprocessing/*.txt linguist-detectable=true
-Img-Preprocessing/*.yaml linguist-detectable=true
-
-Swin-Regression-Model/*.py linguist-detectable=true
-Swin-Regression-Model/*.ipynb linguist-detectable=true
-Swin-Regression-Model/*.json linguist-detectable=true
-Swin-Regression-Model/*.txt linguist-detectable=true
-Swin-Regression-Model/*.yaml linguist-detectable=true
-Swin-Regression-Model/*.h5 linguist-detectable=true
-Swin-Regression-Model/*.hdf5 linguist-detectable=true
-
+Annotations-Test-Case/** linguist-detectable=true
+e2e/** linguist-detectable=true
+hdf5-Convert/** linguist-detectable=true
+Image-Segmentation/** linguist-detectable=true
+Img-Preprocessing/** linguist-detectable=true
+Swin-Regression-Model/** linguist-detectable=true
 
 
