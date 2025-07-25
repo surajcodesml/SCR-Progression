@@ -80,7 +80,6 @@ def plot_layer_annotations(model, images, layer_maps, num_samples=5, save_dir=No
         if save_dir:
             filename = f"{model_name}_sample{idx}.png"
             plt.savefig(os.path.join(save_dir, filename), bbox_inches='tight')
-        plt.show()
         plt.close()
 
 def mae_metric(pred, target)-> float:
@@ -122,10 +121,50 @@ def precision_recall_f1(pred_mask, target_mask, eps=1e-6):
     f1 = (2 * precision * recall + eps) / (precision + recall + eps)
     return precision.mean().item(), recall.mean().item(), f1.mean().item()
 
+def plot_training_metrics(train_losses, val_losses, val_f1s, val_precisions, val_recalls, n_epochs, save_dir=None):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+
+    # Plot Loss vs Epoch
+    plt.figure()
+    plt.plot(range(1, n_epochs+1), train_losses, label='Train Loss')
+    plt.plot(range(1, n_epochs+1), val_losses, label='Val Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss vs Epoch')
+    plt.legend()
+    if save_dir:
+        filename = f"loss_vs_epoch.png"
+        plt.savefig(os.path.join(save_dir, filename), bbox_inches='tight')
+    plt.close()
+
+    # Plot F1 vs Epoch
+    plt.figure()
+    plt.plot(range(1, n_epochs+1), val_f1s, label='Val F1')
+    plt.xlabel('Epoch')
+    plt.ylabel('F1 Score')
+    plt.title('F1 Score vs Epoch')
+    plt.legend()
+    if save_dir:
+        filename = f"f1_vs_epoch.png"
+        plt.savefig(os.path.join(save_dir, filename), bbox_inches='tight')
+    plt.close()
+
+    # Plot Precision-Recall Curve (per epoch)
+    plt.figure()
+    plt.plot(val_recalls, val_precisions, marker='o')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve (per epoch)')
+    if save_dir:
+        filename = f"precision_recall_curve.png"
+        plt.savefig(os.path.join(save_dir, filename), bbox_inches='tight')
+    plt.close()
 
 if __name__ == "__main__":
     # Load data
-    with h5py.File('/home/skumar/Git/SCR-Progression/Duke_Control_processed.h5', 'r') as f:
+    with h5py.File('/home/suraj/Git/SCR-Progression/Duke_Control_processed.h5', 'r') as f:
         images = f['images'][:]  # (N, 224, 224)
         layer_maps = f['layer_maps'][:]  # (N, 224, 3) or (N, 224, 2)
 
@@ -140,8 +179,8 @@ if __name__ == "__main__":
     layer_maps = layer_maps[indices]
     
     # Limit to 1000 images for training
-    images = images[:1000]
-    layer_maps = layer_maps[:1000]
+    #images = images[:1000]
+    #layer_maps = layer_maps[:1000]
 
     # Split data
     dataset = LayerAnnotationDataset(images, layer_maps)
@@ -212,85 +251,7 @@ if __name__ == "__main__":
 
         print(f"Epoch {epoch+1}/{n_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, F1: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
 
-    # Plot Loss vs Epoch
-    plt.figure()
-    plt.plot(range(1, n_epochs+1), train_losses, label='Train Loss')
-    plt.plot(range(1, n_epochs+1), val_losses, label='Val Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Loss vs Epoch')
-    plt.legend()
-    plt.savefig('loss_vs_epoch.png')
-    plt.show()
 
-    # Plot F1 vs Epoch
-    plt.figure()
-    plt.plot(range(1, n_epochs+1), val_f1s, label='Val F1')
-    plt.xlabel('Epoch')
-    plt.ylabel('F1 Score')
-    plt.title('F1 Score vs Epoch')
-    plt.legend()
-    plt.savefig('f1_vs_epoch.png')
-    plt.show()
-
-    # Plot Precision-Recall Curve (per epoch)
-    plt.figure()
-    plt.plot(val_recalls, val_precisions, marker='o')
-    plt.xlabel('Recall')
-    plt.ylabel('Precision')
-    plt.title('Precision-Recall Curve (per epoch)')
-    plt.savefig('precision_recall_curve.png')
-    plt.show()
-
-    '''
-
-    # Tracking lists
-    train_losses = []
-    val_losses = []
-    val_f1s = []
-    val_precisions = []
-    val_recalls = []
-
-    # Training loop
-    n_epochs = 50
-    for epoch in range(n_epochs):
-        model.train()
-        train_loss = 0
-        for imgs, targets in train_loader:
-            imgs, targets = imgs.to(device), targets.to(device)
-            optimizer.zero_grad()
-            outputs = model(imgs)
-            mae = mae_metric(outputs, targets)
-            loss = criterion(outputs, targets)
-            loss.backward()
-            optimizer.step()
-            train_loss += loss.item() * imgs.size(0)
-        train_loss /= n_train
-        print(f"Epoch {epoch+1}/{n_epochs}, Train Loss: {train_loss:.4f}")
-
-    # Evaluation
-    model.eval()
-    test_loss = 0
-    with torch.no_grad():
-        for imgs, targets in test_loader:
-            imgs, targets = imgs.to(device), targets.to(device)
-            outputs = model(imgs)
-            mae = mae_metric(outputs, targets)
-            loss = criterion(outputs, targets)
-            test_loss += loss.item() * imgs.size(0)
-    test_loss /= n_test
-    print(f"Test MSE: {test_loss:.4f}")
-
-
-
-
-    pred_mask = lines_to_mask(outputs)
-    target_mask = lines_to_mask(targets)
-    dice = dice_coefficient(pred_mask, target_mask)
-    precision, recall, f1 = precision_recall_f1(pred_mask, target_mask)
-    print(f"Test Dice: {dice:.4f}\nPrecision: {precision:.4f}\nRecall: {recall:.4f}\nF1: {f1:.4f}")
-    
-    '''
     
     # Save model
     torch.save(model.state_dict(), "CNN_regression_model.pth")
@@ -299,3 +260,5 @@ if __name__ == "__main__":
     X_test = np.array([test_set[i][0].numpy().transpose(1, 2, 0) for i in range(min(5, n_test))])
     y_test = np.array([test_set[i][1].numpy() for i in range(min(5, n_test))])
     plot_layer_annotations(model, X_test, y_test, num_samples=5, save_dir="pytorch_logs", model_name="CNN_regression_model")
+    plot_training_metrics(train_losses, val_losses, val_f1s, val_precisions, val_recalls, n_epochs, save_dir="pytorch_logs")
+    print("Training complete. Model saved as 'CNN_regression_model.pth'.")
