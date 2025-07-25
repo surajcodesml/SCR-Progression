@@ -97,6 +97,15 @@ The project works with **2 different datasets** of processed OCT B-scan images:
 - **Content**: Annotated B-scan dataset of SCR and Control patients
 - **Conversion**: Use `e2e/e2e_to_hdf5_converter.py` with eyepy library for E2E to HDF5 conversion
 
+## Data Preprocessing Using OpenCV
+- **Folder**: Img-Preprocessing
+
+### Noise Reduction  
+- In Progress...
+
+### Edge Detection  
+- In Progress...
+
 ## Data Conversion Tools
 
 ### MATLAB to HDF5 Conversion
