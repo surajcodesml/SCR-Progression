@@ -2,14 +2,7 @@
 
 ## Project Overview
 
-This repository contains machine learning models and tools for automated prediction of retinal layer annotations in Optical Coherence Tomography (OCT) B-scan images. The primary focus is on predicting critical retinal layers, specifically the Inner Limiting Membrane (ILM) and Bruch's Membrane (BM), to assist in medical diagnosis and research.
-
-## Key Features
-
-- **Deep Learning Models**: CNN and Swin Transformer-based architectures for layer segmentation
-- **Multi-Framework Support**: Both TensorFlow/Keras and PyTorch implementations
-- **Data Processing Pipeline**: Comprehensive tools for OCT image preprocessing and annotation handling
-- **Evaluation Tools**: Model performance analysis and visualization utilities
+This repository contains machine learning models and tools for automated prediction of retinal layer annotations in Optical Coherence Tomography (OCT) B-scan images. The primary focus is on predicting critical retinal layers, specifically the Inner Limiting Membrane (ILM) and Bruch's Membrane (BM), to assist in medical diagnosis of SCR disease in patients.
 
 ## Repository Structure
 
@@ -55,74 +48,51 @@ SCR-Progression/
 ## Models Implemented
 
 ### 1. CNN Regression Model
-- **Frameworks**: TensorFlow/Keras and PyTorch
-- **Architecture**: Convolutional layers with regression head
+- **Frameworks**: PyTorch and transformer library
+- **Architecture**: Convolutional layers with regression head (benchmark)
 - **Output**: 224 coordinate points for ILM and BM layers
 - **Files**: `CNN_train.py`, `CNN_pytorch.py`
 
 ### 2. Swin Transformer Model
-- **Framework**: TensorFlow with Transformers library
+- **Framework**: Pytorch with Transformers library
 - **Architecture**: Vision Transformer with Swin architecture
-- **Purpose**: Advanced feature extraction for layer prediction
+- **Purpose**: Advanced feature extraction for layer prediction(benchmark)
 - **Files**: `swin_train.ipynb`, `swin_model_train.ipynb`
 
 ### 3. SegFormer Model
 - **Framework**: Hugging Face Transformers
-- **Architecture**: Efficient transformer for semantic segmentation
+- **Architecture**: Vision transformer
 - **File**: `train_segformer.py`
 
 ## Datasets
 
 The project works with processed OCT B-scan datasets:
-- **Duke Control Dataset**: `Duke_Control_processed.h5`
-- **Layer Annotations**: Preprocessed retinal layer maps
-- **Image Format**: 224x224 grayscale images
-- **Annotations**: ILM and BM layer coordinates
-
+- **Duke Control Dataset**: Annotated b-scan dataset of AMD and Control patients. [Reference](https://people.duke.edu/~sf59/RPEDC_Ophth_2013_dataset.htm)
+- **Internal Nemours Dataset**:  Annotated B-scan dataset of SCR and Control patients.
+- 
 ## Getting Started
 
 ### Prerequisites
 ```bash
 # Core dependencies
-pip install tensorflow torch torchvision
-pip install transformers scikit-learn matplotlib h5py
-pip install numpy pandas opencv-python
+conda install numpy pandas opencv-python
+conda install -c conda-forge tensorflow torch torchvision
+conda install -c conda-forg transformers scikit-learn matplotlib h5py
 ```
-
-### Quick Start
-1. **Data Preparation**:
-   ```bash
-   # Process your OCT data using the conversion tools
-   python hdf5-Convert/mat2hdf5.py
-   ```
-
-2. **Train CNN Model (PyTorch)**:
-   ```bash
-   cd Swin-Regression-Model
-   python CNN_pytorch.py
-   ```
-
-3. **Train CNN Model (TensorFlow)**:
-   ```bash
-   cd Swin-Regression-Model
-   python CNN_train.py
-   ```
-
-4. **Evaluate Results**:
-   - Check generated plots in the logs directory
-   - Review model performance metrics
 
 ## Model Performance
 
 - **Loss Function**: Mean Squared Error (MSE)
-- **Metrics**: Mean Absolute Error (MAE)
-- **Validation**: 80/20 train-test split
-- **Output Format**: (224, 2) coordinate predictions for ILM and BM layers
+- **Metrics**:
+  -- Mean Absolute Error (MAE)
+  -- Dice Score
+  -- Precison-Recall
+  -- Senstivity
 
 ## Future Enhancements
 
-- [ ] Multi-layer prediction (beyond ILM and BM)
-- [ ] Real-time inference pipeline
+- [ ] Model fine-tuning and hyperparameter tuning to improve performance
+- [ ] More advanced Imaage Preprocessing using OpenCV for better results
 - [ ] Model ensemble techniques
 - [ ] Advanced data augmentation
 - [ ] Integration with clinical workflows
@@ -135,15 +105,6 @@ This is an active research project. Contributions and suggestions are welcome fo
 - Data preprocessing enhancements
 - Evaluation metrics and visualization tools
 - Documentation and code organization
-
-## License
-
-[Add your license information here]
-
-## Contact
-
-[Add your contact information here]
-
 ---
 
-*This repository is part of ongoing research in medical image analysis and computer vision for ophthalmology applications.*
+*This repository is part of ongoing research in medical image analysis and computer vision for ophthalmology applications at Nemours Childrens Hospital.*
