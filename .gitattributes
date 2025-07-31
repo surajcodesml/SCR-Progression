@@ -1,0 +1,9 @@
+
+Annotations-Test-Case/** linguist-detectable=true
+e2e/** linguist-detectable=true
+hdf5-Convert/** linguist-detectable=true
+Image-Segmentation/** linguist-detectable=true
+Img-Preprocessing/** linguist-detectable=true
+Swin-Regression-Model/** linguist-detectable=true
+
+

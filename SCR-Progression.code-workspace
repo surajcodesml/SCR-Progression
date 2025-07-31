@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../Data/Duke_WLOA_RL_Annotated"
+		},
+		{
+			"path": "../../Data"
+		}
+	]
+}

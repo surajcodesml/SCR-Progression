@@ -1,0 +1,13 @@
+{
+    "best_test_loss": Infinity,
+    "final_train_loss": NaN,
+    "final_test_mae": NaN,
+    "training_history": [
+        {
+            "epoch": 0,
+            "train_loss": NaN,
+            "test_loss": NaN,
+            "test_mae": NaN
+        }
+    ]
+}
