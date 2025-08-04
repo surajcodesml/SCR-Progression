@@ -783,6 +783,8 @@ def main():
         all_predictions = []
         all_targets = []
         
+        
+        
         with torch.no_grad():
             for data, target in val_loader:
                 data = data.to(device)
