@@ -243,3 +243,9 @@ __marimo__/
 
 #ignore .e2e files
 *.e2e
+
+#ignore model files
+*.pth
+*.pt
+*.ckpt
+*.onnx
