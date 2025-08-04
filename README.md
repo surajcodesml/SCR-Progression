@@ -6,7 +6,6 @@ This repository contains models and tools for retinal layer prediction in Optica
 
 ## Repository Structure
 
-
 ```
 SCR-Progression/
 ├── CNN-Model/               # CNN regression models (PyTorch, TensorFlow)
