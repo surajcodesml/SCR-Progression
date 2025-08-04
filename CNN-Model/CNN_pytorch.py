@@ -139,15 +139,31 @@ def mae_metric(pred, target)-> float:
     '''
     return torch.mean(torch.abs(pred - target)).item()
 
-def lines_to_mask(lines, height=224, width=224):
-    # lines: (batch, width, 2) - for each x, y1 and y2
-    # Returns: (batch, 2, height, width) binary masks for ILM and BM
+def lines_to_mask(lines, height=224, width=224, thickness=3):
+    """
+    Convert line coordinates to binary masks with thickness for better overlap.
+    
+    Args:
+        lines: (batch, width, 2) - for each x, y1 and y2
+        height: image height
+        width: image width  
+        thickness: thickness of the mask lines (default 3 for better overlap)
+    
+    Returns: 
+        (batch, 2, height, width) binary masks for ILM and BM
+    """
     batch = lines.shape[0]
     mask = torch.zeros((batch, 2, height, width), device=lines.device)
+    
     for b in range(batch):
         for i in range(2):  # ILM and BM
             y_coords = torch.clamp(lines[b, :, i].round().long(), 0, height-1)
-            mask[b, i, y_coords, torch.arange(width)] = 1
+            
+            # Create thick lines by adding neighboring pixels
+            for offset in range(-thickness//2, thickness//2 + 1):
+                y_thick = torch.clamp(y_coords + offset, 0, height-1)
+                mask[b, i, y_thick, torch.arange(width)] = 1
+    
     return mask
 
 def dice_coefficient(pred_mask, target_mask, eps=1e-6):
@@ -174,6 +190,48 @@ def precision_recall_f1(pred_mask, target_mask, eps=1e-6):
     f1 = (2 * precision * recall + eps) / (precision + recall + eps)
     return precision.mean().item(), recall.mean().item(), f1.mean().item()
 
+def coordinate_mae(pred_coords, target_coords):
+    """
+    Calculate Mean Absolute Error for coordinate predictions (better for line-based tasks).
+    
+    Args:
+        pred_coords: (batch, width, 2) predicted coordinates
+        target_coords: (batch, width, 2) target coordinates
+    
+    Returns:
+        float: Mean absolute error in pixels
+    """
+    return torch.mean(torch.abs(pred_coords - target_coords)).item()
+
+def coordinate_rmse(pred_coords, target_coords):
+    """
+    Calculate Root Mean Square Error for coordinate predictions.
+    
+    Args:
+        pred_coords: (batch, width, 2) predicted coordinates  
+        target_coords: (batch, width, 2) target coordinates
+    
+    Returns:
+        float: Root mean square error in pixels
+    """
+    return torch.sqrt(torch.mean((pred_coords - target_coords) ** 2)).item()
+
+def boundary_distance_metric(pred_coords, target_coords, threshold=5.0):
+    """
+    Calculate percentage of predictions within threshold distance of ground truth.
+    
+    Args:
+        pred_coords: (batch, width, 2) predicted coordinates
+        target_coords: (batch, width, 2) target coordinates  
+        threshold: maximum distance in pixels to consider as correct
+    
+    Returns:
+        float: Percentage of predictions within threshold (0-1)
+    """
+    distances = torch.abs(pred_coords - target_coords)
+    within_threshold = (distances <= threshold).float()
+    return within_threshold.mean().item()
+
 def check_for_nan_gradients(model):
     """Check if gradients contain NaN values"""
     for name, param in model.named_parameters():
@@ -183,13 +241,15 @@ def check_for_nan_gradients(model):
                 return True
     return False
 
-def plot_training_metrics_comprehensive(train_losses, val_losses, val_f1s, val_precisions, val_recalls, val_dice, val_iou, n_epochs, save_dir=None):
-    """Plot comprehensive training metrics in a single figure"""
+def plot_training_metrics_comprehensive(train_losses, val_losses, val_f1s, val_precisions, val_recalls, 
+                                       val_dice, val_iou, val_coord_maes, val_coord_rmses, val_boundary_accuracies, 
+                                       n_epochs, save_dir=None):
+    """Plot comprehensive training metrics including coordinate-based metrics"""
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     
-    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+    fig, axes = plt.subplots(3, 2, figsize=(15, 18))
     
     # Plot 1: Loss vs Epoch
     axes[0, 0].plot(range(1, n_epochs+1), train_losses, label='Train Loss', color='blue')
@@ -200,31 +260,49 @@ def plot_training_metrics_comprehensive(train_losses, val_losses, val_f1s, val_p
     axes[0, 0].legend()
     axes[0, 0].grid(True, alpha=0.3)
     
-    # Plot 2: Dice and IoU vs Epoch
-    axes[0, 1].plot(range(1, n_epochs+1), val_dice, label='Dice Score', color='green')
-    axes[0, 1].plot(range(1, n_epochs+1), val_iou, label='IoU Score', color='orange')
+    # Plot 2: Coordinate-based Metrics (Better for line prediction)
+    axes[0, 1].plot(range(1, n_epochs+1), val_coord_maes, label='MAE (pixels)', color='green')
+    axes[0, 1].plot(range(1, n_epochs+1), val_coord_rmses, label='RMSE (pixels)', color='orange')
     axes[0, 1].set_xlabel('Epoch')
-    axes[0, 1].set_ylabel('Score')
-    axes[0, 1].set_title('Dice and IoU Scores')
+    axes[0, 1].set_ylabel('Error (pixels)')
+    axes[0, 1].set_title('Coordinate Prediction Errors')
     axes[0, 1].legend()
     axes[0, 1].grid(True, alpha=0.3)
     
-    # Plot 3: F1 Score vs Epoch
-    axes[1, 0].plot(range(1, n_epochs+1), val_f1s, label='F1 Score', color='purple')
+    # Plot 3: Boundary Accuracy (% within 5 pixels)
+    axes[1, 0].plot(range(1, n_epochs+1), val_boundary_accuracies, label='Boundary Acc (5px)', color='purple')
     axes[1, 0].set_xlabel('Epoch')
-    axes[1, 0].set_ylabel('F1 Score')
-    axes[1, 0].set_title('F1 Score')
+    axes[1, 0].set_ylabel('Accuracy')
+    axes[1, 0].set_title('Boundary Accuracy (within 5 pixels)')
     axes[1, 0].legend()
     axes[1, 0].grid(True, alpha=0.3)
+    axes[1, 0].set_ylim(0, 1)
     
-    # Plot 4: Precision and Recall vs Epoch
-    axes[1, 1].plot(range(1, n_epochs+1), val_precisions, label='Precision', color='cyan')
-    axes[1, 1].plot(range(1, n_epochs+1), val_recalls, label='Recall', color='magenta')
+    # Plot 4: Dice and IoU vs Epoch (with thick masks)
+    axes[1, 1].plot(range(1, n_epochs+1), val_dice, label='Dice Score', color='green')
+    axes[1, 1].plot(range(1, n_epochs+1), val_iou, label='IoU Score', color='orange')
     axes[1, 1].set_xlabel('Epoch')
     axes[1, 1].set_ylabel('Score')
-    axes[1, 1].set_title('Precision and Recall')
+    axes[1, 1].set_title('Dice and IoU Scores (Thick Masks)')
     axes[1, 1].legend()
     axes[1, 1].grid(True, alpha=0.3)
+    
+    # Plot 5: F1 Score vs Epoch
+    axes[2, 0].plot(range(1, n_epochs+1), val_f1s, label='F1 Score', color='purple')
+    axes[2, 0].set_xlabel('Epoch')
+    axes[2, 0].set_ylabel('F1 Score')
+    axes[2, 0].set_title('F1 Score (Thick Masks)')
+    axes[2, 0].legend()
+    axes[2, 0].grid(True, alpha=0.3)
+    
+    # Plot 6: Precision and Recall vs Epoch
+    axes[2, 1].plot(range(1, n_epochs+1), val_precisions, label='Precision', color='cyan')
+    axes[2, 1].plot(range(1, n_epochs+1), val_recalls, label='Recall', color='magenta')
+    axes[2, 1].set_xlabel('Epoch')
+    axes[2, 1].set_ylabel('Score')
+    axes[2, 1].set_title('Precision and Recall (Thick Masks)')
+    axes[2, 1].legend()
+    axes[2, 1].grid(True, alpha=0.3)
     
     plt.tight_layout()
     if save_dir:
@@ -384,53 +462,93 @@ def test_lines_to_mask_visualization(model, images, layer_maps, num_samples=3, s
             true_layers_torch = torch.from_numpy(true_layers).unsqueeze(0)
             pred_layers_torch = torch.from_numpy(pred_layers).unsqueeze(0)
             
-            # Generate masks
-            true_mask = lines_to_mask(true_layers_torch)
-            pred_mask = lines_to_mask(pred_layers_torch)
+            # Generate masks with thickness=1 and thickness=3 for comparison
+            true_mask_thin = lines_to_mask(true_layers_torch, thickness=1)
+            pred_mask_thin = lines_to_mask(pred_layers_torch, thickness=1)
+            true_mask_thick = lines_to_mask(true_layers_torch, thickness=3)
+            pred_mask_thick = lines_to_mask(pred_layers_torch, thickness=3)
+            
+            # Calculate metrics for both thin and thick masks
+            dice_thin = dice_coefficient(pred_mask_thin, true_mask_thin)
+            dice_thick = dice_coefficient(pred_mask_thick, true_mask_thick)
+            iou_thin = iou_metric(pred_mask_thin, true_mask_thin)
+            iou_thick = iou_metric(pred_mask_thick, true_mask_thick)
             
             # Create visualization
-            fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+            fig, axes = plt.subplots(3, 3, figsize=(18, 18))
             
-            # Original image
+            # Row 1: Original and line annotations
             axes[0, 0].imshow(img[:, :, 0], cmap='gray')
-            axes[0, 0].set_title(f'Original Image {idx}')
+            axes[0, 0].set_title(f'Sample {idx}: Original Image')
             axes[0, 0].axis('off')
             
-            # True mask overlay
-            axes[0, 1].imshow(img[:, :, 0], cmap='gray', alpha=0.7)
-            axes[0, 1].imshow(true_mask[0, 0].numpy(), cmap='Reds', alpha=0.5)
-            axes[0, 1].imshow(true_mask[0, 1].numpy(), cmap='Blues', alpha=0.5)
-            axes[0, 1].set_title('True Masks (Red: ILM, Blue: BM)')
+            axes[0, 1].imshow(img[:, :, 0], cmap='gray')
+            axes[0, 1].plot(range(224), true_layers[:, 0], 'g-', label='True ILM', linewidth=2)
+            axes[0, 1].plot(range(224), true_layers[:, 1], 'b-', label='True BM', linewidth=2)
+            axes[0, 1].plot(range(224), pred_layers[:, 0], 'r--', label='Pred ILM', linewidth=2)
+            axes[0, 1].plot(range(224), pred_layers[:, 1], 'm--', label='Pred BM', linewidth=2)
+            axes[0, 1].set_title('Line Annotations Comparison')
+            axes[0, 1].legend()
             axes[0, 1].axis('off')
             
-            # Predicted mask overlay
-            axes[0, 2].imshow(img[:, :, 0], cmap='gray', alpha=0.7)
-            axes[0, 2].imshow(pred_mask[0, 0].numpy(), cmap='Reds', alpha=0.5)
-            axes[0, 2].imshow(pred_mask[0, 1].numpy(), cmap='Blues', alpha=0.5)
-            axes[0, 2].set_title('Pred Masks (Red: ILM, Blue: BM)')
+            # Coordinate accuracy analysis
+            coord_mae = np.mean(np.abs(pred_layers - true_layers))
+            coord_rmse = np.sqrt(np.mean((pred_layers - true_layers) ** 2))
+            axes[0, 2].text(0.1, 0.8, f'Coordinate Metrics:', fontsize=12, fontweight='bold')
+            axes[0, 2].text(0.1, 0.7, f'MAE: {coord_mae:.2f} pixels', fontsize=10)
+            axes[0, 2].text(0.1, 0.6, f'RMSE: {coord_rmse:.2f} pixels', fontsize=10)
+            axes[0, 2].text(0.1, 0.4, f'Mask Metrics (thin):', fontsize=12, fontweight='bold')
+            axes[0, 2].text(0.1, 0.3, f'Dice: {dice_thin:.4f}', fontsize=10)
+            axes[0, 2].text(0.1, 0.2, f'IoU: {iou_thin:.4f}', fontsize=10)
+            axes[0, 2].text(0.1, 0.05, f'Mask Metrics (thick):', fontsize=12, fontweight='bold')
+            axes[0, 2].text(0.1, -0.05, f'Dice: {dice_thick:.4f}', fontsize=10)
+            axes[0, 2].text(0.1, -0.15, f'IoU: {iou_thick:.4f}', fontsize=10)
+            axes[0, 2].set_xlim(0, 1)
+            axes[0, 2].set_ylim(-0.2, 1)
+            axes[0, 2].set_title('Metrics Summary')
             axes[0, 2].axis('off')
             
-            # Line annotations on image
-            axes[1, 0].imshow(img[:, :, 0], cmap='gray')
-            axes[1, 0].plot(range(224), true_layers[:, 0], 'g-', label='True ILM', linewidth=2)
-            axes[1, 0].plot(range(224), true_layers[:, 1], 'b-', label='True BM', linewidth=2)
-            axes[1, 0].plot(range(224), pred_layers[:, 0], 'r--', label='Pred ILM', linewidth=2)
-            axes[1, 0].plot(range(224), pred_layers[:, 1], 'm--', label='Pred BM', linewidth=2)
-            axes[1, 0].set_title('Line Annotations Comparison')
-            axes[1, 0].legend()
+            # Row 2: Thin masks
+            axes[1, 0].imshow(img[:, :, 0], cmap='gray', alpha=0.7)
+            axes[1, 0].imshow(true_mask_thin[0, 0].numpy(), cmap='Reds', alpha=0.6)
+            axes[1, 0].imshow(true_mask_thin[0, 1].numpy(), cmap='Blues', alpha=0.6)
+            axes[1, 0].set_title('True Masks (Thin, 1px)')
             axes[1, 0].axis('off')
             
-            # True masks only
-            axes[1, 1].imshow(true_mask[0, 0].numpy(), cmap='Reds', alpha=0.8)
-            axes[1, 1].imshow(true_mask[0, 1].numpy(), cmap='Blues', alpha=0.8)
-            axes[1, 1].set_title('True Masks Only')
+            axes[1, 1].imshow(img[:, :, 0], cmap='gray', alpha=0.7)
+            axes[1, 1].imshow(pred_mask_thin[0, 0].numpy(), cmap='Reds', alpha=0.6)
+            axes[1, 1].imshow(pred_mask_thin[0, 1].numpy(), cmap='Blues', alpha=0.6)
+            axes[1, 1].set_title('Pred Masks (Thin, 1px)')
             axes[1, 1].axis('off')
             
-            # Predicted masks only
-            axes[1, 2].imshow(pred_mask[0, 0].numpy(), cmap='Reds', alpha=0.8)
-            axes[1, 2].imshow(pred_mask[0, 1].numpy(), cmap='Blues', alpha=0.8)
-            axes[1, 2].set_title('Pred Masks Only')
+            # Overlap visualization for thin masks
+            overlap_thin = true_mask_thin[0, 0].numpy() * pred_mask_thin[0, 0].numpy() + \
+                          true_mask_thin[0, 1].numpy() * pred_mask_thin[0, 1].numpy()
+            axes[1, 2].imshow(img[:, :, 0], cmap='gray', alpha=0.7)
+            axes[1, 2].imshow(overlap_thin, cmap='Greens', alpha=0.8)
+            axes[1, 2].set_title('Overlap (Thin masks)')
             axes[1, 2].axis('off')
+            
+            # Row 3: Thick masks
+            axes[2, 0].imshow(img[:, :, 0], cmap='gray', alpha=0.7)
+            axes[2, 0].imshow(true_mask_thick[0, 0].numpy(), cmap='Reds', alpha=0.6)
+            axes[2, 0].imshow(true_mask_thick[0, 1].numpy(), cmap='Blues', alpha=0.6)
+            axes[2, 0].set_title('True Masks (Thick, 3px)')
+            axes[2, 0].axis('off')
+            
+            axes[2, 1].imshow(img[:, :, 0], cmap='gray', alpha=0.7)
+            axes[2, 1].imshow(pred_mask_thick[0, 0].numpy(), cmap='Reds', alpha=0.6)
+            axes[2, 1].imshow(pred_mask_thick[0, 1].numpy(), cmap='Blues', alpha=0.6)
+            axes[2, 1].set_title('Pred Masks (Thick, 3px)')
+            axes[2, 1].axis('off')
+            
+            # Overlap visualization for thick masks
+            overlap_thick = true_mask_thick[0, 0].numpy() * pred_mask_thick[0, 0].numpy() + \
+                           true_mask_thick[0, 1].numpy() * pred_mask_thick[0, 1].numpy()
+            axes[2, 2].imshow(img[:, :, 0], cmap='gray', alpha=0.7)
+            axes[2, 2].imshow(overlap_thick, cmap='Greens', alpha=0.8)
+            axes[2, 2].set_title('Overlap (Thick masks)')
+            axes[2, 2].axis('off')
             
             plt.tight_layout()
             plt.savefig(os.path.join(save_dir, f'mask_test_sample_{idx}.png'), 
@@ -482,7 +600,7 @@ if __name__ == "__main__":
     use_nemours_data = True
     use_duke_data = True
     max_samples_per_dataset = 700  # Set to number to limit samples, None for all
-    
+
     # Load datasets
     datasets = []
     
@@ -561,8 +679,8 @@ if __name__ == "__main__":
     n_test = int(0.2 * n_total)
     n_train = n_total - n_test
     train_set, test_set = random_split(dataset, [n_train, n_test], generator=torch.Generator().manual_seed(42))
-    train_loader = DataLoader(train_set, batch_size=32, shuffle=True)
-    test_loader = DataLoader(test_set, batch_size=32)
+    train_loader = DataLoader(train_set, batch_size=16, shuffle=True)
+    test_loader = DataLoader(test_set, batch_size=16)
 
     # Model, loss, optimizer
     model = LayerAnnotationCNN().to(device)
@@ -577,6 +695,9 @@ if __name__ == "__main__":
     val_recalls = []
     val_dice = []
     val_iou = []
+    val_coord_maes = []
+    val_coord_rmses = []
+    val_boundary_accuracies = []
 
     n_epochs = 10
     print(f"\nStarting training for {n_epochs} epochs...")
@@ -674,12 +795,18 @@ if __name__ == "__main__":
             all_outputs = torch.cat(all_outputs, dim=0)
             all_targets = torch.cat(all_targets, dim=0)
             
-            # Denormalize for mask generation
+            # Denormalize for mask generation and coordinate metrics
             pred_denorm = denormalize_layers(all_outputs.numpy(), 0, 224)
             target_denorm = denormalize_layers(all_targets.numpy(), 0, 224)
             
-            pred_mask = lines_to_mask(torch.from_numpy(pred_denorm))
-            target_mask = lines_to_mask(torch.from_numpy(target_denorm))
+            # Coordinate-based metrics (better for line predictions)
+            coord_mae = coordinate_mae(torch.from_numpy(pred_denorm), torch.from_numpy(target_denorm))
+            coord_rmse = coordinate_rmse(torch.from_numpy(pred_denorm), torch.from_numpy(target_denorm))
+            boundary_acc = boundary_distance_metric(torch.from_numpy(pred_denorm), torch.from_numpy(target_denorm), threshold=5.0)
+            
+            # Mask-based metrics (with thicker lines for better overlap)
+            pred_mask = lines_to_mask(torch.from_numpy(pred_denorm), thickness=3)
+            target_mask = lines_to_mask(torch.from_numpy(target_denorm), thickness=3)
             
             dice = dice_coefficient(pred_mask, target_mask)
             iou = iou_metric(pred_mask, target_mask)
@@ -690,6 +817,9 @@ if __name__ == "__main__":
             val_recalls.append(recall)
             val_dice.append(dice)
             val_iou.append(iou)
+            val_coord_maes.append(coord_mae)
+            val_coord_rmses.append(coord_rmse)
+            val_boundary_accuracies.append(boundary_acc)
         else:
             # Use default values if no valid outputs
             val_f1s.append(0.0)
@@ -697,12 +827,15 @@ if __name__ == "__main__":
             val_recalls.append(0.0)
             val_dice.append(0.0)
             val_iou.append(0.0)
+            val_coord_maes.append(224.0)  # Worst case: full image height error
+            val_coord_rmses.append(224.0)
+            val_boundary_accuracies.append(0.0)
             dice, iou, precision, recall, f1 = 0.0, 0.0, 0.0, 0.0, 0.0
+            coord_mae, coord_rmse, boundary_acc = 224.0, 224.0, 0.0
 
-        print(f"Epoch {epoch+1}/{n_epochs}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, "
-              f"F1: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, Dice: {dice:.4f}, IoU: {iou:.4f}")
-
-    # Save model and generate visualizations
+        print(f"Epoch {epoch+1}/{n_epochs}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+        print(f"  Coord MAE: {coord_mae:.2f}px, RMSE: {coord_rmse:.2f}px, Boundary Acc: {boundary_acc:.3f}")
+        print(f"  F1: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, Dice: {dice:.4f}, IoU: {iou:.4f}")    # Save model and generate visualizations
     torch.save(model.state_dict(), "CNN_regression_model.pth")
     print("\nGenerating visualizations...")
     
@@ -710,8 +843,16 @@ if __name__ == "__main__":
     y_test = np.array([test_set[i][1].numpy() for i in range(min(3, n_test))])
     
     plot_sample_predictions(model, X_test, y_test, num_samples=3, save_dir="pytorch_logs")
-    plot_training_metrics_comprehensive(train_losses, val_losses, val_f1s, val_precisions, val_recalls, val_dice, val_iou, n_epochs, save_dir="pytorch_logs")
+    plot_training_metrics_comprehensive(train_losses, val_losses, val_f1s, val_precisions, val_recalls, 
+                                      val_dice, val_iou, val_coord_maes, val_coord_rmses, val_boundary_accuracies, 
+                                      n_epochs, save_dir="pytorch_logs")
     test_lines_to_mask_visualization(model, X_test, y_test, num_samples=3, save_dir="pytorch_logs/mask_tests")
     
     print("Training complete. Model saved as 'CNN_regression_model.pth'.")
     print("Visualizations saved in 'pytorch_logs/' directory.")
+    print(f"\nFinal Performance Summary:")
+    print(f"  Final Coordinate MAE: {val_coord_maes[-1]:.2f} pixels")
+    print(f"  Final Coordinate RMSE: {val_coord_rmses[-1]:.2f} pixels") 
+    print(f"  Final Boundary Accuracy (5px): {val_boundary_accuracies[-1]:.3f}")
+    print(f"  Final Dice Score: {val_dice[-1]:.4f}")
+    print(f"  Final IoU Score: {val_iou[-1]:.4f}")

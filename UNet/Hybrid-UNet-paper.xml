@@ -1,0 +1,2844 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.3 20210610//EN" "JATS-journalpublishing1-3.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" article-type="research-article" dtd-version="1.3" xml:lang="en">
+  <front>
+    <journal-meta>
+      <journal-id journal-id-type="publisher-id">bioengineering</journal-id>
+      <journal-title-group>
+        <journal-title>Bioengineering</journal-title>
+        <abbrev-journal-title abbrev-type="publisher">Bioengineering</abbrev-journal-title>
+        <abbrev-journal-title abbrev-type="pubmed">Bioengineering</abbrev-journal-title>
+      </journal-title-group>
+      <issn pub-type="epub">2306-5354</issn>
+      <publisher>
+        <publisher-name>MDPI</publisher-name>
+      </publisher>
+    </journal-meta>
+    <article-meta>
+      <article-id pub-id-type="doi">10.3390/bioengineering11030240</article-id>
+      <article-id pub-id-type="publisher-id">bioengineering-11-00240</article-id>
+      <article-categories>
+        <subj-group>
+          <subject>Article</subject>
+        </subj-group>
+      </article-categories>
+      <title-group>
+        <article-title>Advancing Ocular Imaging: A Hybrid Attention Mechanism-Based U-Net Model for Precise Segmentation of Sub-Retinal Layers in OCT Images</article-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author">
+          <contrib-id contrib-id-type="orcid" authenticated="true">https://orcid.org/0000-0001-9430-4512</contrib-id>
+          <name>
+            <surname>Karn</surname>
+            <given-names>Prakash Kumar</given-names>
+          </name>
+          <xref rid="c1-bioengineering-11-00240" ref-type="corresp">*</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <contrib-id contrib-id-type="orcid" authenticated="true">https://orcid.org/0000-0002-1812-4285</contrib-id>
+          <name>
+            <surname>Abdulla</surname>
+            <given-names>Waleed H.</given-names>
+          </name>
+          <xref rid="c1-bioengineering-11-00240" ref-type="corresp">*</xref>
+        </contrib>
+      </contrib-group>
+      <contrib-group>
+        <contrib contrib-type="editor">
+          <name>
+            <surname>Cataldo</surname>
+            <given-names>Andrea</given-names>
+          </name>
+          <role>Academic Editor</role>
+        </contrib>
+      </contrib-group>
+      <aff id="af1-bioengineering-11-00240">Department of Electrical, Computer and Software Engineering, The University of Auckland, Auckland 1010, New Zealand</aff>
+      <author-notes>
+        <corresp id="c1-bioengineering-11-00240"><label>*</label>Correspondence: <email>pkar443@aucklanduni.ac.nz</email> (P.K.K.); <email>w.abdulla@auckland.ac.nz</email> (W.H.A.)</corresp>
+      </author-notes>
+      <pub-date pub-type="epub">
+        <day>28</day>
+        <month>02</month>
+        <year>2024</year>
+      </pub-date>
+      <pub-date pub-type="collection">
+        <month>03</month>
+        <year>2024</year>
+      </pub-date>
+      <volume>11</volume>
+      <issue>3</issue>
+      <elocation-id>240</elocation-id>
+      <history>
+        <date date-type="received">
+          <day>08</day>
+          <month>01</month>
+          <year>2024</year>
+        </date>
+        <date date-type="rev-recd">
+          <day>21</day>
+          <month>02</month>
+          <year>2024</year>
+        </date>
+        <date date-type="accepted">
+          <day>26</day>
+          <month>02</month>
+          <year>2024</year>
+        </date>
+      </history>
+      <permissions>
+        <copyright-statement>&#xA9; 2024 by the authors.</copyright-statement>
+        <copyright-year>2024</copyright-year>
+        <license license-type="open-access">
+          <license-p>Licensee MDPI, Basel, Switzerland. This article is an open access article distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license (<ext-link ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</ext-link>).</license-p>
+        </license>
+      </permissions>
+      <abstract>
+        <p>This paper presents a novel U-Net model incorporating a hybrid attention mechanism for automating the segmentation of sub-retinal layers in Optical Coherence Tomography (OCT) images. OCT is an ophthalmology tool that provides detailed insights into retinal structures. Manual segmentation of these layers is time-consuming and subjective, calling for automated solutions. Our proposed model combines edge and spatial attention mechanisms with the U-Net architecture to improve segmentation accuracy. By leveraging attention mechanisms, the U-Net focuses selectively on image features. Extensive evaluations using datasets demonstrate that our model outperforms existing approaches, making it a valuable tool for medical professionals. The study also highlights the model&#x2019;s robustness through performance metrics such as an average Dice score of 94.99%, Adjusted Rand Index (ARI) of 97.00%, and Strength of Agreement (SOA) classifications like &#x201C;Almost Perfect&#x201D;, &#x201C;Excellent&#x201D;, and &#x201C;Very Strong&#x201D;. This advanced predictive model shows promise in expediting processes and enhancing the precision of ocular imaging in real-world applications.</p>
+      </abstract>
+      <kwd-group>
+        <kwd>optical coherence tomography (OCT)</kwd>
+        <kwd>sub-retinal layers</kwd>
+        <kwd>image segmentation</kwd>
+        <kwd>deep learning</kwd>
+        <kwd>U-Net</kwd>
+        <kwd>attention mechanism</kwd>
+        <kwd>medical imaging</kwd>
+        <kwd>ophthalmology</kwd>
+      </kwd-group>
+      <funding-group>
+        <funding-statement>This research received no external funding.</funding-statement>
+      </funding-group>
+    </article-meta>
+  </front>
+  <body>
+    <sec id="sec1-bioengineering-11-00240" sec-type="intro">
+      <title>1. Introduction</title>
+      <p>Optical coherence tomography (OCT) is a valuable imaging tool that helps doctors see detailed pictures of both the skin and the retina. It gives clear views, showing layers like the skin&#x2019;s epidermis and dermis, and the retina&#x2019;s layers, with very fine detail [<xref ref-type="bibr" rid="B1-bioengineering-11-00240">1</xref>]. This technology is essential in dermatology and eye care, helping diagnose and keep track of conditions like age-related macular degeneration, glaucoma, and diabetic retinopathy. An OCT image is created by focusing light into the eye and measuring the reflections that bounce back. The intensity and timing of these reflections are used to construct a detailed image of the layers of tissue within the eye. OCT is a non-invasive, painless procedure that can be performed in a few minutes. It is often used with other eye tests, such as fundus photography or visual field testing, to provide a comprehensive picture of a person&#x2019;s eye health.</p>
+      <p>The retina is the light-sensitive layer of tissue at the back of the eye that captures images and sends them to the brain via the optic nerve. It is composed of several layers, such as Internal Limiting Membrane (ILM), Retinal Pigment Epithelium (RPE), Ganglion Cell Layer (GCL), Inner Plexiform Layer (IPL), Inner Nuclear Layer (INL), Outer Plexiform Layer (OPL), Outer Nuclear Layer (ONL), External Limiting Membrane (ELM), Photoreceptor Layer (PR), Nerve Fibre Layer (NFL), Retinal Pigment Epithelium (RPE) and Bruch&#x2019;s Membrane (BM). The RPE is a single layer of cells that supports the photoreceptors and helps maintain the retina&#x2019;s health. The PR comprises rods and cones responsible for converting light into electrical signals that the brain can interpret. The NFL contains the axons of the ganglion cells, which transmit visual information from the retina to the brain [<xref ref-type="bibr" rid="B2-bioengineering-11-00240">2</xref>]. The illustrative diagram of a healthy retina and OCT is given in <xref ref-type="fig" rid="bioengineering-11-00240-f001">Figure 1</xref>.</p>
+      <p>One common eye condition that can be diagnosed and monitored using OCT is age-related macular degeneration (AMD). AMD is a progressive disease that affects the central part of the retina, known as the macula. It is the leading cause of vision loss in people over the age of 50. OCT can detect thinning or swelling of the retina in people with AMD, which can help healthcare providers determine the best course of treatment.</p>
+      <p>Another eye condition that can be detected and monitored using OCT is glaucoma. Glaucoma can damage the optic nerve, leading to vision loss and blindness. It is often associated with high intraocular pressure but can also occur in people with normal eye pressure. OCT can detect changes in the thickness of the NFL and measure the cup-to-disc ratio in people with glaucoma, which can help healthcare providers determine the severity of the disease.</p>
+      <p>Diabetic eye disease is another condition that can be diagnosed and monitored using OCT. People with diabetes are at increased risk for a range of eye problems, including diabetic retinopathy, which can cause vision loss and blindness. OCT can detect swelling or thickening of the retina, exudates, and nerve proliferation in people with diabetic eye disease.</p>
+      <p>Optical Coherence Tomography (OCT) image analysis represents a critical frontier in ocular diagnostics, offering a comprehensive view of the retinal microstructure. OCT image analysis detects sub-retinal fluids, segments subretinal layers, and classifies diseases. This capability is particularly crucial in diseases like diabetic retinopathy, where the timely detection and monitoring of sub-retinal fluids are paramount for effective treatment planning and preserving vision [<xref ref-type="bibr" rid="B3-bioengineering-11-00240">3</xref>].</p>
+      <p>In recent years, the application of deep learning techniques, notably convolutional neural networks (CNNs), has demonstrated considerable promise in the domain of Optical Coherence Tomography (OCT) image segmentation, as evidenced by notable studies [<xref ref-type="bibr" rid="B4-bioengineering-11-00240">4</xref>,<xref ref-type="bibr" rid="B5-bioengineering-11-00240">5</xref>,<xref ref-type="bibr" rid="B6-bioengineering-11-00240">6</xref>]. CNNs, a subset of artificial neural networks, exhibit exceptional suitability for image analysis tasks, automatically learning to extract features for subsequent classification or regression tasks [<xref ref-type="bibr" rid="B7-bioengineering-11-00240">7</xref>]. Zang et al. [<xref ref-type="bibr" rid="B8-bioengineering-11-00240">8</xref>] introduced an automated diagnostic framework utilizing OCT and OCTA data for diabetic retinopathy (DR), age-related macular degeneration (AMD), and glaucoma. Their approach, employing 3D convolutional neural networks, achieves high diagnostic accuracy with AUCs of 0.95 for DR, 0.98 for AMD, and 0.91 for glaucoma. The framework also generates interpretable 3D class activation maps, offering insights into the decision-making process, thereby presenting a promising avenue for reliable and automated diagnosis of these eye diseases.</p>
+      <p>A subsequent investigation into the segmentation of retinal layers is shown by Li et al. [<xref ref-type="bibr" rid="B9-bioengineering-11-00240">9</xref>], who introduced a CNN-based method for automatically segmenting retinal layers in macular OCT images. Using over 5000 OCT image datasets, their approach outperformed traditional methodologies dependent on manual feature extraction and classification.</p>
+      <p>However, the journey with deep learning in OCT image segmentation is not without its challenges. The substantial demand for annotated training data poses a significant hurdle, necessitating time-intensive and laborious efforts. The intricate nature of CNN architectures, often characterised by millions of parameters, presents complexities in training and renders models susceptible to overfitting when confronted with insufficiently large training datasets.</p>
+      <p>Addressing these challenges, transfer learning emerges as a potential solution, enabling the utilisation of pre-trained CNN models as a foundation for training new models for specific tasks. This strategy applies knowledge acquired from extensive datasets, potentially reducing the demand for annotated data and enhancing model generalizability [<xref ref-type="bibr" rid="B10-bioengineering-11-00240">10</xref>]. Another avenue for improvement involves incorporating multi-modal data for CNN training. Beyond OCT images, complementary information from diverse medical images, such as fundus photographs or fluorescein angiography images, enhances CNN performance and bolsters the model&#x2019;s overall robustness [<xref ref-type="bibr" rid="B2-bioengineering-11-00240">2</xref>].</p>
+      <p>In this research paper, we have harnessed the capabilities of a U-Net model enriched with a dense skip connection. The U-Net architecture employed here comprises five encoder and five decoder layers, complemented by a singular base layer. The skip connections between the encoder and decoder&#x2019;s first two layers incorporate an Edge Attention (EA) Module, while the subsequent deeper layers use a Spatial Attention (SA) block.</p>
+      <p>The rationale behind incorporating two edge attention modules and three spatial attention blocks stems from the inherent distribution of features across the network. The top layers inherently contain more pronounced edge information, necessitating specialised attention mechanisms. As the network progresses deeper, spatial features become increasingly dominant, justifying the integration of attention mechanisms adapted to their characteristics.</p>
+      <p>In the traditional way of handling skip connections, we used to include the entire image feature matrix in the decoder. However, we found a smarter and more efficient way of doing this. When we performed the max-pooling operation, where we chose the pixel with the highest intensity for further processing in deeper layers, we realized that these pixels had already been processed. To make things more efficient, we replaced the highest intensity pixels with zero during max-pooling, preserving the important residual features, and then included them in the skip connection. This modification helped us keep crucial features while significantly reducing the time it takes for training.</p>
+      <p>The integration of attention mechanisms and the selective handling of skip connections in our U-Net model with dense skip connections thus represents a methodologically sound and computationally efficient strategy for precisely segmenting sub-retinal layers in OCT images. The key contributions of this research article are given below:
+	  <list list-type="simple"><list-item><p><bold>Key Contributions:</bold></p></list-item></list>
+		<list list-type="bullet"><list-item><p><bold>Dual Attention U-Net Architecture:</bold> This study introduces an innovative U-Net model with five encoder and decoder layers, incorporating Edge and Spatial Attention Modules. This dual attention mechanism enhances the model&#x2019;s ability to capture distinct features crucial for precise OCT image segmentation.</p></list-item><list-item><p><bold>Efficient Skip Connection Handling:</bold> A departure from traditional practices, our approach strategically replaces max-pooled pixels in skip connections, preserving essential residual features. This optimisation reduces computational redundancy, decreases training duration, and enhances overall model efficiency.</p></list-item><list-item><p><bold>Strategic Attention Mechanism Integration:</bold> Our model strategically employs Edge Attention and Spatial Attention blocks to tailor attention mechanisms to hierarchical feature distribution. This enhances adaptability, allowing the model to focus on edge information in shallower layers and spatial intricacies in deeper layers for improved sub-retinal layer segmentation.</p></list-item></list></p>
+      <p>The rest of the paper is structured as follows: <xref ref-type="sec" rid="sec2-bioengineering-11-00240">Section 2</xref> outlines the literature review and selection of attention block. <xref ref-type="sec" rid="sec3-bioengineering-11-00240">Section 3</xref> describes the materials and methods used in this research. In <xref ref-type="sec" rid="sec4-bioengineering-11-00240">Section 4</xref>, the implementation of network and performance measures are explained. In <xref ref-type="sec" rid="sec5-bioengineering-11-00240">Section 5</xref>, results are presented and analysed. The key conclusions are summarised in <xref ref-type="sec" rid="sec6-bioengineering-11-00240">Section 6</xref>.</p>
+    </sec>
+    <sec id="sec2-bioengineering-11-00240">
+      <title>2. Related Works</title>
+      <p>Detecting retinal layer surfaces in OCT images has been a focal point of extensive research, with numerous automatic methods proposed and validated across patients with diverse retinal diseases. These approaches fall into two main categories: traditional rule-based methods employing graph search algorithms and contemporary deep learning methods encompassing pixel-wise classification and boundary regression.</p>
+      <p>Graph search and level-set methods, often relying on an initial retinal layer surface segmentation as a constraint, have been pivotal in this domain. Notably, the &#x201C;Iowa Reference Algorithms&#x201D; by Garvin et al. [<xref ref-type="bibr" rid="B11-bioengineering-11-00240">11</xref>] utilised unary terms derived from filter responses, integrating hard and soft constraints on various retinal layers to construct a segmentation graph. Song et al. [<xref ref-type="bibr" rid="B12-bioengineering-11-00240">12</xref>] introduced a 3D graph-theoretic framework, incorporating shape and context prior knowledge to penalise local changes in shape and surface distance for retinal layer segmentation. Dufour et al. [<xref ref-type="bibr" rid="B13-bioengineering-11-00240">13</xref>] devised a graph-based multi-surface segmentation method, incorporating soft constraints informed by a learned model, demonstrating commendable performance on normal and drusen OCT images. Novosel et al. [<xref ref-type="bibr" rid="B14-bioengineering-11-00240">14</xref>] proposed a loosely coupled level-set method for segmentation, specifically addressing OCT images with central serous retinopathy, utilising attenuation coefficients and thickness information derived from anatomical priors to guide the algorithm effectively [<xref ref-type="bibr" rid="B11-bioengineering-11-00240">11</xref>,<xref ref-type="bibr" rid="B13-bioengineering-11-00240">13</xref>,<xref ref-type="bibr" rid="B14-bioengineering-11-00240">14</xref>,<xref ref-type="bibr" rid="B15-bioengineering-11-00240">15</xref>].</p>
+      <p>Lang et al. [<xref ref-type="bibr" rid="B16-bioengineering-11-00240">16</xref>] introduced a graph-cut-based solution for inferring retinal layers in OCT images, augmenting performance by incorporating a random forest classifier to compute the unary term in the energy function. Liu et al. [<xref ref-type="bibr" rid="B17-bioengineering-11-00240">17</xref>] leveraged a random forest model to generate a probability map for retinal layer boundaries. They optimised the algorithm using a fast level-set method to maintain layer orderliness in the segmentation of retinal layers within macula-centred OCT images. Xiang et al. [<xref ref-type="bibr" rid="B18-bioengineering-11-00240">18</xref>] employed a neural network model to establish initial retinal layer boundaries based on 24 selected features. They further proposed an advanced graph search method to reinforce constraints between retinal layers, addressing morphological changes induced by the occurrence of CNV. Notably, this method enabled the simultaneous detection of retinal layer surfaces and neovascularisation.</p>
+      <p>However, a notable limitation across these approaches is their reliance on manually selected features or application-specific graph parameters, necessitating a fine-tuning step for new applications [<xref ref-type="bibr" rid="B19-bioengineering-11-00240">19</xref>,<xref ref-type="bibr" rid="B20-bioengineering-11-00240">20</xref>]. This process proves time-consuming and challenging, particularly in cases with pathology. Traditional rule-based methods, often dependent on parameter tuning, are susceptible to overfitting, exhibiting good performances on tuned data but faltering on unseen data. These methods are additionally characterised by computational expense. As advancements in deep learning persist, an increasing array of methods that employ these techniques for retinal layer segmentation have emerged. Fang et al. [<xref ref-type="bibr" rid="B21-bioengineering-11-00240">21</xref>] utilised a CNN to classify central pixels within sliding patches, effectively segmenting the retina by identifying boundary pixels. Similarly, Xiang et al. employed a custom feature extractor and neural networks to categorise each pixel into one of seven retinal layers, background, or neovascularisation [<xref ref-type="bibr" rid="B18-bioengineering-11-00240">18</xref>].</p>
+      <p>However, the efficiency of sliding windows and CNN classifiers is limited, requiring a distinct classification process for each pixel. Consequently, attention turned to semantic segmentation algorithms rooted in Fully Convolutional Networks (FCNs) for retinal layer segmentation. Roy et al. [<xref ref-type="bibr" rid="B22-bioengineering-11-00240">22</xref>] introduced ReLayNet, a variant of Unet, to segment the retina into seven layers and detect oedema and background. Their strategy incorporated pooling operations during up-sampling to recover fine-grained location information and implemented a joint loss function comprising cross-entropy and Dice loss for optimising the network. Wang et al. utilised higher-level features of the encoder for region segmentation and lower-level features for boundary segmentation, combining both for the ultimate segmentation outcome [<xref ref-type="bibr" rid="B23-bioengineering-11-00240">23</xref>]. Techniques addressing resolution loss, including dilated convolution and spatial pyramid pooling, were also embraced. Apostolopoulos et al. employed multi-scale input and dilated convolution to counteract resolution loss due to down-sampling [<xref ref-type="bibr" rid="B24-bioengineering-11-00240">24</xref>], while Li et al. [<xref ref-type="bibr" rid="B25-bioengineering-11-00240">25</xref>] proposed an FCN featuring dilated convolution layers and a modified spatial pyramid pooling layer for multi-scale information, enhancing retinal layer segmentation.</p>
+      <p>Methods grounded in Recurrent Neural Networks (RNNs) have been proposed to tackle the limitation of convolution layers capturing only local features. Gopinath et al. applied CNN for layer extraction and edge detection, incorporating Long Short-Term Memory for continuous boundary tracing [<xref ref-type="bibr" rid="B26-bioengineering-11-00240">26</xref>]. Hu et al. established an RNN-based image feature extraction module within ResNet, capturing global information from images to augment segmentation performance [<xref ref-type="bibr" rid="B27-bioengineering-11-00240">27</xref>]. Another innovative approach involves Transformer-based networks, leveraging multi-head self-attention to establish global dependencies within the feature map. Xue et al. introduced CTS-Net, based on the Swin Transformer architecture, amalgamating Transformer&#x2019;s global modelling capabilities with convolutional operations for precise retinal layer segmentation and seamless boundary extraction [<xref ref-type="bibr" rid="B28-bioengineering-11-00240">28</xref>]. Recent advancements in network-based methodologies for optical coherence tomography angiography (OCTA) segmentation address challenges in retinal vascular structure delineation, particularly under low-light conditions, and offer the potential for improved disease diagnosis, such as branch vein occlusion (BVO) [<xref ref-type="bibr" rid="B29-bioengineering-11-00240">29</xref>]. One study [<xref ref-type="bibr" rid="B30-bioengineering-11-00240">30</xref>] explored the application of five neural network architectures to accurately segment retinal vessels in fundus images reconstructed from 3D OCT scan data, achieving up to 98% segmentation accuracy, thus demonstrating the promise of neural networks in this domain. Viedma et al. [<xref ref-type="bibr" rid="B31-bioengineering-11-00240">31</xref>] evaluates Mask R-CNN for retinal OCT image segmentation, showcasing its comparable performance to U-Net with lower boundary errors and faster inference times, offering a promising alternative for efficient automatic analysis in research and clinical applications.</p>
+      <p>Attention mechanisms represent a neural network architecture that enables models to selectively focus on specific input elements during predictions. Widely applied in natural language processing for tasks like machine translation and text classification, attention mechanisms have recently found utility in image analysis, particularly image segmentation. Within image segmentation, attention mechanisms enhance accuracy and efficiency by enabling models to concentrate on the most crucial parts of an image. This proves beneficial for complex or cluttered backgrounds, allowing models to disregard irrelevant features and focus on the objects of interest. Various attention mechanisms have been employed in image segmentation, including self-attention, global attention, and local attention.</p>
+      <p>Self-attention mechanisms empower models to independently attend to different parts of an input image without external input. Implemented through a self-attention layer, this mechanism computes attention weights for each feature, facilitating independent focus and weighted feature summation. Global attention mechanisms permit models to consider the entire input image when making predictions, which is crucial for tasks where the whole image holds relevance, such as object detection or image classification. An example includes the global average pooling layer, which computes the average of all input features. Local attention mechanisms enable models to focus on specific regions of an input image, which is beneficial for tasks like image segmentation or object localisation. Implemented using convolutional layers or spatial transformers, these mechanisms allow models to shift or scale feature maps to focus on different image parts.</p>
+      <p>The U-Net architecture, introduced by Ronneberger et al. [<xref ref-type="bibr" rid="B32-bioengineering-11-00240">32</xref>], is a prominent choice for image segmentation tasks, notably finding success in diverse medical imaging applications (Kong et al. [<xref ref-type="bibr" rid="B33-bioengineering-11-00240">33</xref>]). This architecture, characterised by an encoder-decoder structure with skip connections, excels in preserving spatial resolution and intricate details within input images [<xref ref-type="bibr" rid="B32-bioengineering-11-00240">32</xref>]. However, the conventional U-Net lacks explicit integration of attention mechanisms, which is valuable for tasks where specific input portions hold more significance [<xref ref-type="bibr" rid="B34-bioengineering-11-00240">34</xref>]. Attention mechanisms empower models to selectively focus on crucial features or regions, enhancing performance in tasks like image segmentation. Various studies have suggested incorporating attention blocks or modules into the U-Net&#x2019;s encoder or decoder [<xref ref-type="bibr" rid="B35-bioengineering-11-00240">35</xref>,<xref ref-type="bibr" rid="B36-bioengineering-11-00240">36</xref>,<xref ref-type="bibr" rid="B37-bioengineering-11-00240">37</xref>,<xref ref-type="bibr" rid="B38-bioengineering-11-00240">38</xref>]. These attention mechanisms may utilise techniques such as channel attention, spatial attention, or self-attention.</p>
+      <p>In the realm of OCT image analysis, a pivotal task involves segmenting distinct layers within the retina. Segmentation, crucial for diagnosing and managing eye conditions, requires identifying and delineating various structures or regions within an image. Accurate OCT image segmentation enables healthcare providers to measure the thickness and structure of diverse retinal layers precisely.</p>
+    </sec>
+    <sec id="sec3-bioengineering-11-00240">
+      <title>3. Materials and Methods</title>
+      <p>This section discusses, in detail, the materials and methodology of the proposed work, such as pre-processing techniques, implementation of Hybrid-U-NET, loss functions, and performance matrices.</p>
+      <sec id="sec3dot1-bioengineering-11-00240">
+        <title>3.1. Dataset</title>
+        <p>In this study, the performance of the proposed model is meticulously assessed and benchmarked against CNNs lacking attention mechanisms using the publicly accessible AROI dataset [<xref ref-type="bibr" rid="B39-bioengineering-11-00240">39</xref>]. This dataset comprises macular SD-OCT volumes recorded with the Zeiss Cirrus HD OCT 4000 device, featuring 128 B-scans with 1024 &#xD7; 512 pixels per OCT volume resolution. The dataset incorporates annotations for 1136 OCT B-scans obtained from 24 patients diagnosed with late neovascular AMD, with annotations meticulously conducted by a skilled ophthalmologist.</p>
+        <p>Annotations within the dataset encompass critical boundaries between layers, including the internal limiting membrane (ILM), retinal pigment epithelium (RPE), the boundary between the inner plexiform layer and inner nuclear layer (IPL/INL), and Bruch&#x2019;s membrane (BM). Additionally, annotations extend to the identification of various fluids, such as pigment epithelial detachment (PED), subretinal fluid (SRF), and intraretinal fluid (IRF). The dataset is carefully curated for semantic segmentation, defining five distinct classes.</p>
+        <p>The selection of the AROI dataset is motivated by its public availability, comprehensive layer and fluid annotations, and inclusion of results reflecting human variability. Moreover, the dataset features images from patients afflicted with neovascular AMD, often concurrently with geographic atrophy, presenting a formidable challenge for segmentation due to pronounced pathological alterations. Notably, the AROI dataset is preferred over commercially available segmentation software associated with OCT devices, as it exhibits superior performance, especially in cases with substantial pathological complexities, where conventional software tends to weaken.</p>
+      </sec>
+      <sec id="sec3dot2-bioengineering-11-00240">
+        <title>3.2. Pre-Processing</title>
+        <p>The Hybrid-U-Net model is meticulously trained on the AROI dataset, a publicly accessible repository featuring input images in either 3D or volumetric format. The OCT volumes are sequentially scanned and sliced to transform these volumetric scans into 2D OCT images, producing pixel-level annotated ground truth images. Given the susceptibility of the newly generated 2D OCT slices to speckle noise, a series of pre-processing steps is essential to ensure data integrity. The initial pre-processing steps involve cropping and resizing the input images to 512 &#xD7; 256 dimensions, eliminating extraneous black backgrounds. Subsequently, the grayscale is extracted from the resultant images, and Gaussian smoothing is applied to mitigate variance among pixel intensities. Contrast Limited Adaptive Histogram Equalization (CLAHE) is employed to address non-homogeneity resulting from noise, enhancing the contrast of the input images.</p>
+        <p>Given the inherent requirement for a substantial volume of annotated data in deep learning models, a strategic approach involves image augmentation techniques. Applying the <italic>Albumentations 1.4</italic> Python library [<xref ref-type="bibr" rid="B40-bioengineering-11-00240">40</xref>], the study incorporates nine diverse augmentation techniques: vertical flip, horizontal flip, random snow, CLAHE, blur, invert image, coarse dropout, downscale, and equalise. As a part of image augmentation, we decided to flip and invert images in our training data to help the model learn better. Even though real OCT scans are not usually flipped or inverted, doing this helps the model get used to the different kinds of images it might see. These changes make the model better at understanding variations in real-world scans. Thus, by training with these flipped and inverted images, the model gets better at handling the different situations it might encounter.</p>
+        <p>Each original image transforms into nine distinct versions, creating an expansive dataset comprising 11,360 images. To maintain consistency, corresponding masks also undergo the augmentation process for vertical and horizontal flips. <xref ref-type="fig" rid="bioengineering-11-00240-f002">Figure 2</xref> visually depicts the transformative impact of these pre-processing techniques on the dataset. This comprehensive approach not only addresses the data scarcity challenge but also ensures the robustness and diversity of the training dataset, enhancing the model&#x2019;s adaptability to varied input scenarios.</p>
+      </sec>
+      <sec id="sec3dot3-bioengineering-11-00240">
+        <title>3.3. Network Overview</title>
+        <p>In our research, we have used a special kind of U-Net model to better analyse OCT images of the eye. This U-Net has a clever design, with five parts for looking at the image (encoder) and five parts for understanding and interpreting it (decoder), along with a starting point (base layer). What makes it stand out is that we have added specific ways for it to pay attention to important details in the image. Imagine the image as having layers like a cake. In the first two layers, we want the model to focus on the edges, and in the deeper layers, it should pay more attention to the overall shape. We chose this based on how information is spread in the image. We have also changed the way the model connects different parts of the image while working. Traditionally, it would use all the details from the whole image, but we found a smarter way. When picking the most important details in each part of the image, we noticed that max-pooled pixels will be processed in the deeper layer. Thus, we decided to be more efficient and avoid repeating unnecessary work. This approach is in line with how features are presented in the model. The edges matter more in the shallower layers, and the model should focus more on the overall shapes as we go deeper.</p>
+        <p>By combining this with attention mechanisms, we have created a U-Net model that efficiently and accurately works on segmenting specific layers in eye images. Our model is optimised using AdaBound as an optimiser, employs sparse categorical cross-entropy as a loss function, processes images at a resolution of 512 &#xD7; 256, and handles batches of four images at a time. Our U-Net model used a 6-fold cross-validation method, providing a solid solution for accurately segmenting layers in eye images. The proposed hybrid attention-based U-net architecture is given in <xref ref-type="fig" rid="bioengineering-11-00240-f003">Figure 3</xref>.</p>
+        <sec id="sec3dot3dot1-bioengineering-11-00240">
+          <title>3.3.1. Edge Attention Block</title>
+          <p>U-Net++ addresses the challenge of losing spatial details during decoding by incorporating dense jump connections but introduces redundancy in shallow features. Geetha et al. [<xref ref-type="bibr" rid="B38-bioengineering-11-00240">38</xref>] proposed the enhanced edge attention gate, a mechanism that learns to suppress irrelevant features while emphasising crucial ones for a specific task to tackle this redundancy. However, our experiments observed that existing U-Net structures, including their improvements, did not adequately focus on edge information, resulting in frequently absent edge details in segmentation outcomes. We introduce an improved edge feature attention mechanism for retinal images to enhance edge information and address these gaps. Inspired by the approach in [<xref ref-type="bibr" rid="B35-bioengineering-11-00240">35</xref>] and designed for 2D images, our edge attention (EA) block combines the structure with the Canny operator to boost edge features. In <xref ref-type="fig" rid="bioengineering-11-00240-f004">Figure 4</xref>, <inline-formula><mml:math id="mm1"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:mfenced separators="|"><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:mfenced></mml:mrow></mml:semantics></mml:math></inline-formula> represents the feature mapping output at the <italic>i</italic>th layer, characterised by <inline-formula><mml:math id="mm2"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>F</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> feature maps with dimensions <inline-formula><mml:math id="mm3"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>C</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub><mml:mo>&#xD7;</mml:mo><mml:msub><mml:mrow><mml:mi>H</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub><mml:mo>&#xD7;</mml:mo><mml:msub><mml:mrow><mml:mi>W</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula>, where, <inline-formula><mml:math id="mm4"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>C</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> is the number of channels and <inline-formula><mml:math id="mm5"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>H</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub><mml:mo>&#xD7;</mml:mo><mml:msub><mml:mrow><mml:mi>W</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> denotes the size of each feature map. An indicative operation for obtaining <inline-formula><mml:math id="mm6"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>f</mml:mi></mml:mrow><mml:mrow><mml:mi>i</mml:mi></mml:mrow></mml:msub><mml:mfenced separators="|"><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:mfenced></mml:mrow></mml:semantics></mml:math></inline-formula> is given in <xref ref-type="fig" rid="bioengineering-11-00240-f004">Figure 4</xref>.</p>
+          <p>The Canny operator, designated as <inline-formula><mml:math id="mm7"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>E</mml:mi></mml:mrow><mml:mrow><mml:mi>C</mml:mi><mml:mi>a</mml:mi><mml:mi>n</mml:mi><mml:mi>n</mml:mi><mml:mi>y</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula>, is employed in our structure. <inline-formula><mml:math id="mm8"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>F</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> is computed by summing pointwise results obtained through padding and convolution operations on <inline-formula><mml:math id="mm9"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>x</mml:mi></mml:mrow><mml:mrow><mml:mn>1</mml:mn></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> with the Canny transverse and longitudinal operators, as expressed in Equation (1).
+          <disp-formula id="FD1-bioengineering-11-00240"><label>(1)</label><mml:math id="mm10" display="block"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>F</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mrow><mml:msubsup><mml:mo stretchy="false">&#x2211;</mml:mo><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:msub><mml:mrow><mml:mi>H</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:msubsup><mml:mrow><mml:mrow><mml:msubsup><mml:mo stretchy="false">&#x2211;</mml:mo><mml:mrow><mml:mi>j</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:msub><mml:mrow><mml:mi>W</mml:mi></mml:mrow><mml:mrow><mml:mi>x</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:msubsup><mml:mrow><mml:mo>(</mml:mo><mml:msub><mml:mrow><mml:msub><mml:mrow><mml:mi>x</mml:mi></mml:mrow><mml:mrow><mml:mn>1</mml:mn></mml:mrow></mml:msub><mml:mo>&#xA0;</mml:mo><mml:mo>&#x2217;</mml:mo><mml:mo>&#xA0;</mml:mo><mml:msub><mml:mrow><mml:mi>E</mml:mi></mml:mrow><mml:mrow><mml:mi>C</mml:mi><mml:mi>a</mml:mi><mml:mi>n</mml:mi><mml:mi>n</mml:mi><mml:mi>y</mml:mi></mml:mrow></mml:msub><mml:mo>)</mml:mo></mml:mrow><mml:mrow><mml:mi>i</mml:mi><mml:mo>,</mml:mo><mml:mi>j</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:mrow></mml:mrow></mml:mrow></mml:mrow></mml:semantics></mml:math></disp-formula></p>
+          <p>The asterisk (&#x2217;) represents the convolution operation. The initial feature mappings, obtained across various scales, undergo a fusion process. Simultaneously, the feature mappings enriched with enhanced edge information and weighted using attention coefficients (<italic>&#x3B1;</italic>), are integrated through jump connections. The attention coefficient <italic>&#x3B1;</italic>, constrained within the range [0, 1], serves the purpose of selectively preserving task-specific and pertinent features. This is accomplished by identifying edge regions and adjusting the weight distribution for attention, ensuring that only relevant features essential for the task are retained. This EA structure effectively enhances edge features in retinal images, contributing to segmentation tasks. A block diagram of the proposed edge attention model is given in <xref ref-type="fig" rid="bioengineering-11-00240-f005">Figure 5</xref>.</p>
+        </sec>
+        <sec id="sec3dot3dot2-bioengineering-11-00240">
+          <title>3.3.2. Spatial Attention</title>
+          <p>In the spatial attention block, two essential operations are performed on the input feature matrix: max pooling and average pooling. The outcomes of both operations are concatenated and padded to ensure consistent dimensions. Subsequently, this combined result undergoes processing using a sigmoid function, producing the attention feature matrix. This approach effectively integrates maximum and average pooling strategies to capture diverse spatial information in the input.</p>
+          <p>Mathematically, let <inline-formula><mml:math id="mm11"><mml:semantics><mml:mrow><mml:mi>X</mml:mi></mml:mrow></mml:semantics></mml:math></inline-formula> represent the input feature matrix, <inline-formula><mml:math id="mm12"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mi>p</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>l</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> denote the result of max pooling, and <inline-formula><mml:math id="mm13"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>a</mml:mi><mml:mi>v</mml:mi><mml:mi>g</mml:mi><mml:mi>p</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>l</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> signify the outcome of average pooling. The concatenated and padded result, <inline-formula><mml:math id="mm14"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>c</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi><mml:mi>c</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula>, can be expressed as:<disp-formula id="FD2-bioengineering-11-00240"><label>(2)</label><mml:math id="mm15" display="block"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>c</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi><mml:mi>c</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub><mml:mo>=</mml:mo><mml:mi mathvariant="normal">P</mml:mi><mml:mi mathvariant="normal">a</mml:mi><mml:mi mathvariant="normal">d</mml:mi><mml:mfenced separators="|"><mml:mrow><mml:mfenced open="[" close="]" separators="|"><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mi>p</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>l</mml:mi><mml:mo>,</mml:mo><mml:mo>&#xA0;</mml:mo></mml:mrow></mml:msub><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>a</mml:mi><mml:mi>v</mml:mi><mml:mi>g</mml:mi><mml:mi>p</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>l</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:mfenced></mml:mrow></mml:mfenced></mml:mrow></mml:semantics></mml:math></disp-formula></p>
+          <p>Here, the Pad represents the padding operation to maintain uniform dimensions. The sigmoid function is then applied to <inline-formula><mml:math id="mm16"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>c</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi><mml:mi>c</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> to obtain the final attention feature matrix:<disp-formula id="FD3-bioengineering-11-00240"><label>(3)</label><mml:math id="mm17" display="block"><mml:semantics><mml:mrow><mml:mi>A</mml:mi><mml:mi>t</mml:mi><mml:mi>t</mml:mi><mml:mi>e</mml:mi><mml:mi>n</mml:mi><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi><mml:mo>&#xA0;</mml:mo><mml:mi>F</mml:mi><mml:mi>e</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi><mml:mi>u</mml:mi><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mo>&#xA0;</mml:mo><mml:mi>M</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi><mml:mi>r</mml:mi><mml:mi>i</mml:mi><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:mi>&#x3C3;</mml:mi><mml:mfenced separators="|"><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>c</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi><mml:mi>c</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:mfenced></mml:mrow></mml:semantics></mml:math></disp-formula></p>
+          <p>In this expression, <italic>&#x3C3;</italic> denotes the sigmoid function. This spatial attention mechanism enhances the model&#x2019;s ability to focus on critical spatial features during segmentation tasks. The detailed block diagram of the proposed spatial attention block is given in <xref ref-type="fig" rid="bioengineering-11-00240-f006">Figure 6</xref>. The &#x201C;Output feature&#x201D; refers to the final feature representation obtained after applying the spatial attention mechanism to <inline-formula><mml:math id="mm18"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>c</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi><mml:mi>c</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula>. This output feature represents a refined and weighted combination of the original features from both <inline-formula><mml:math id="mm19"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>m</mml:mi><mml:mi>a</mml:mi><mml:mi>x</mml:mi><mml:mi>p</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>l</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula> and <inline-formula><mml:math id="mm20"><mml:semantics><mml:mrow><mml:msub><mml:mrow><mml:mi>X</mml:mi></mml:mrow><mml:mrow><mml:mi>a</mml:mi><mml:mi>v</mml:mi><mml:mi>g</mml:mi><mml:mi>p</mml:mi><mml:mi>o</mml:mi><mml:mi>o</mml:mi><mml:mi>l</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:semantics></mml:math></inline-formula>, where regions deemed more relevant or informative by the attention mechanism are highlighted, while less important regions are restrained.</p>
+        </sec>
+      </sec>
+    </sec>
+    <sec id="sec4-bioengineering-11-00240">
+      <title>4. Experimental Setup</title>
+      <p>The Hybrid U-Net network is realised using Keras 2.4, with a TensorFlow backend executed on the Google Collaboratory platform, featuring an Intel Xeon CPU (2.3 GHz) and an A100 GPU equipped with 32 GB RAM and 128 GB memory. In this section, we detail the parameters of the proposed model, outline the model training process, and specify the evaluation metrics.</p>
+      <sec id="sec4dot1-bioengineering-11-00240">
+        <title>4.1. Network Implementation</title>
+        <p>In implementing our Hybrid U-Net model, we start the training process from scratch, avoiding reliance on pre-trained weights. The model is meticulously fine-tuned using a sparse categorical cross-entropy loss. Tuning parameters &#x3B1;, &#x3B2;, and &#x3B3; are set explicitly to 1, 0, and 1, respectively, ensuring harmonious adaptation to the multiclass labelling intricacies of the AROI dataset. We utilise the AdaBound optimiser with an initial learning rate of 0.001 to optimise the training process. This learning rate undergoes a 0.1 reduction if the loss does not decrease for five consecutive epochs. The training unfolds in intervals of 100 epochs, with a maximum of 300 epochs, and involves vigilant monitoring of validation loss and Dice coefficient values.</p>
+        <p>At each 100-epoch checkpoint, we strategically load the weights of either the best Dice coefficient or the least loss value into the network, extending the training for additional epochs. An early stopping mechanism is also implemented, halving the training process if the loss value fails to decrease for 10 consecutive epochs. Our model, optimised using AdaBound, employs sparse categorical cross-entropy as a loss function, processes images at a resolution of 512 &#xD7; 256, and handles batches of four images simultaneously. This carefully designed training setup, coupled with a 6-fold cross-validation method, ensures the robustness of our Hybrid U-Net model, making it a powerful solution for accurately segmenting layers in eye images.</p>
+      </sec>
+      <sec id="sec4dot2-bioengineering-11-00240">
+        <title>4.2. Performance Measures</title>
+        <p>In the comprehensive evaluation of our proposed network, we employ a diverse set of metrics, including the Area Under the Curve (AUC), Precision, Recall, F1 Score, and Dice Coefficient. The Dice Coefficient serves as a particularly valuable metric, quantifying the degree of overlap between two masks and providing insights into the segmentation accuracy.</p>
+        <p>Expanding beyond well-established performance metrics, we go a step further by calculating additional statistical parameters to assess our model thoroughly. This study contributes significantly to the field by introducing and utilising a range of metrics often overlooked in the existing literature. Some noteworthy examples of these additional parameters include Bangdiwala B, Chi-Squared DF, Hamming Loss, and kappa. These statistical parameters are calculated using the PyCM library mentioned in [<xref ref-type="bibr" rid="B41-bioengineering-11-00240">41</xref>]. The details and significance of each parameter are meticulously presented in the <xref ref-type="app" rid="app1-bioengineering-11-00240">Appendix A</xref>, establishing this study as a benchmark for future researchers seeking a comprehensive evaluation and comparison of model performance.
+        <disp-formula id="FD4-bioengineering-11-00240"><label>(4)</label><mml:math id="mm21" display="block"><mml:semantics><mml:mrow><mml:mi mathvariant="normal">P</mml:mi><mml:mi mathvariant="normal">r</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">s</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">o</mml:mi><mml:mi mathvariant="normal">n</mml:mi><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mi>T</mml:mi><mml:mi>P</mml:mi></mml:mrow><mml:mrow><mml:mi>T</mml:mi><mml:mi>P</mml:mi><mml:mo>+</mml:mo><mml:mi>F</mml:mi><mml:mi>P</mml:mi></mml:mrow></mml:mfrac></mml:mrow></mml:semantics></mml:math></disp-formula>
+        <disp-formula id="FD5-bioengineering-11-00240"><label>(5)</label><mml:math id="mm22" display="block"><mml:semantics><mml:mrow><mml:mi mathvariant="normal">R</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">a</mml:mi><mml:mi mathvariant="normal">l</mml:mi><mml:mi mathvariant="normal">l</mml:mi><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mi>T</mml:mi><mml:mi>P</mml:mi></mml:mrow><mml:mrow><mml:mi>T</mml:mi><mml:mi>P</mml:mi><mml:mo>+</mml:mo><mml:mi>F</mml:mi><mml:mi>N</mml:mi></mml:mrow></mml:mfrac></mml:mrow></mml:semantics></mml:math></disp-formula>
+        <disp-formula id="FD6-bioengineering-11-00240"><label>(6)</label><mml:math id="mm23" display="block"><mml:semantics><mml:mrow><mml:mi mathvariant="normal">F</mml:mi><mml:mn>1</mml:mn><mml:mo>&#xA0;</mml:mo><mml:mi mathvariant="normal">S</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">o</mml:mi><mml:mi mathvariant="normal">r</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mn>2</mml:mn><mml:mo>&#xD7;</mml:mo><mml:mi mathvariant="normal">P</mml:mi><mml:mi mathvariant="normal">r</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">s</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">o</mml:mi><mml:mi mathvariant="normal">n</mml:mi><mml:mo>&#xD7;</mml:mo><mml:mi mathvariant="normal">R</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">a</mml:mi><mml:mi mathvariant="normal">l</mml:mi><mml:mi mathvariant="normal">l</mml:mi></mml:mrow><mml:mrow><mml:mi mathvariant="normal">P</mml:mi><mml:mi mathvariant="normal">r</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">s</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">o</mml:mi><mml:mi mathvariant="normal">n</mml:mi><mml:mo>+</mml:mo><mml:mi mathvariant="normal">R</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">a</mml:mi><mml:mi mathvariant="normal">l</mml:mi><mml:mi mathvariant="normal">l</mml:mi></mml:mrow></mml:mfrac></mml:mrow></mml:semantics></mml:math></disp-formula>
+        <disp-formula id="FD7-bioengineering-11-00240"><label>(7)</label><mml:math id="mm24" display="block"><mml:semantics><mml:mrow><mml:mi mathvariant="normal">D</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mo>&#xA0;</mml:mo><mml:mi mathvariant="normal">C</mml:mi><mml:mi mathvariant="normal">o</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mi mathvariant="normal">f</mml:mi><mml:mi mathvariant="normal">f</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">c</mml:mi><mml:mi mathvariant="normal">i</mml:mi><mml:mi mathvariant="normal">e</mml:mi><mml:mi mathvariant="normal">n</mml:mi><mml:mi mathvariant="normal">t</mml:mi><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mn>2</mml:mn><mml:mi>T</mml:mi><mml:mi>P</mml:mi></mml:mrow><mml:mrow><mml:mn>2</mml:mn><mml:mi>T</mml:mi><mml:mi>P</mml:mi><mml:mo>+</mml:mo><mml:mi>F</mml:mi><mml:mi>N</mml:mi><mml:mo>+</mml:mo><mml:mi>F</mml:mi><mml:mi>P</mml:mi></mml:mrow></mml:mfrac></mml:mrow></mml:semantics></mml:math></disp-formula></p>
+        <p><italic>TP</italic> represents True Positives, <italic>FP</italic> represents False Positives, and <italic>FN</italic> represents False Negatives. We have also evaluated our model using the Dice Coefficient, which measures the area of overlap between two masks.</p>
+      </sec>
+    </sec>
+    <sec id="sec5-bioengineering-11-00240" sec-type="results">
+      <title>5. Results and Discussion</title>
+      <p>In this section, we will discuss our segmentation results on various datasets. We will also break down the impact of each module in our network through ablation studies. Additionally, we will compare our hybrid U-Net model with existing methods to comprehensively understand its performance.</p>
+      <sec id="sec5dot1-bioengineering-11-00240">
+        <title>5.1. Ablation Study</title>
+        <p>In our study, we looked at how different improvements in our model&#x2019;s core, like making it deeper and placing attention blocks in specific areas, affect its performance. We tested four configurations, each with its own way of using attention blocks. For example, in <xref ref-type="fig" rid="bioengineering-11-00240-f007">Figure 7</xref>, Structure A used attention blocks only in the encoder, while Structure B used them only in the decoder. Structures C and D had different types of attention blocks in all the skip-connections. We also compared these configurations with our proposed model, which combines these approaches.</p>
+        <p>The results in <xref ref-type="table" rid="bioengineering-11-00240-t001">Table 1</xref> show that our proposed model performed best, with the highest Mean Dice Coefficient (94.99) and Mean Boundary Intersection over Union (91.80). This means our model accurately identifies and separates different areas in the images. This study helps us understand how each part of the model contributes to its success. It guides us in choosing the correct setup for future designs and where to place attention blocks for better results. Thus, not only does our proposed model perform well, but this study also gives us valuable insights for improving similar models in the future.</p>
+      </sec>
+      <sec id="sec5dot2-bioengineering-11-00240">
+        <title>5.2. Assessment of the Hybrid-U-Net Model by Comparison with Existing State-of-the-Art Models</title>
+        <p>For the evaluation of our hybrid U-Net model, we employ the Dice score as it is a widely used metric for semantic segmentation. <xref ref-type="table" rid="bioengineering-11-00240-t002">Table 2</xref> presents the Dice scores for each class and inter- and intra-observer errors. Additionally, we compare Dice scores with published results [<xref ref-type="bibr" rid="B33-bioengineering-11-00240">33</xref>] for the standard U-Net model, U-Net-like model, and U-Net++ model. The U-Net-like model incorporates residual blocks inspired by ResNet in its encoder and decoder architecture but lacks direct skip connections. On the other hand, the U-Net++ architecture, a nested U-Net for medical image segmentation, draws inspiration from DenseNet, incorporating dense blocks and convolution layers between the encoder and decoder instead of direct skip connections. The proposed model consistently outshines other state-of-the-art models in each evaluated aspect, demonstrating its versatility and strength in handling intricate segmentation challenges.</p>
+        <p>Notably, the proposed model achieves an outstanding Dice coefficient of 99.80 in the &#x201C;Above ILM&#x201D; category, showcasing superior accuracy compared to all other models. In the challenging &#x201C;ILM-PL/INL&#x201D; category, the proposed model excels with a Dice coefficient of 97.78, outperforming competitors in capturing details between the ILM and IPL/INL layers.</p>
+        <p>Furthermore, the model demonstrates proficiency in segmenting intricate structures between IPL/INL and RPE, achieving a Dice coefficient of 98.70 in the &#x201C;IPL/INL-RPE&#x201D; category. In the &#x201C;RPE-BM&#x201D; category, the proposed model showcases notable performance with a Dice coefficient of 78.90, surpassing its counterparts in delineating the complex boundary between RPE and BM. Finally, in accurately segmenting sub-retinal structures beneath Bruch&#x2019;s membrane (&#x201C;Under BM&#x201D;), the proposed model attains a remarkable Dice coefficient of 99.80. This comprehensive analysis underscores the proposed model&#x2019;s robustness, accuracy, and versatility, positioning it as a highly reliable solution for OCT image segmentation and promising advancements in medical image analysis in ophthalmology. Results of the proposed model showing the best and worst cases of segmentation on raw and augmented images are given in <xref ref-type="fig" rid="bioengineering-11-00240-f008">Figure 8</xref>.</p>
+      </sec>
+      <sec id="sec5dot3-bioengineering-11-00240">
+        <title>5.3. Evaluating Model Performance Using Different Measures</title>
+        <p>We carefully assessed the hybrid U-Net model using various measures, going beyond just numbers to understand its performance differently. The model showed excellent accuracy (0.97) and was further validated with an Adjusted Rand Index (ARI) of 0.97. Other measures, like Bangdiwala B (0.99) and Bennett S (0.97849), indicated the model&#x2019;s strength. Our evaluation included Strength of Agreement (SOA) rankings ranging from &#x2018;Almost Perfect&#x2019; to &#x2018;Very Strong&#x2019; across different benchmarks. It is important to note that these measures were calculated thoughtfully to give us a comprehensive view of the model&#x2019;s abilities. This study highlights the model&#x2019;s accuracy and reliability across various criteria, providing valuable insights for real-world applications. You can refer to the performance metrics in <xref ref-type="app" rid="app1-bioengineering-11-00240">Appendix A</xref>, <xref ref-type="table" rid="bioengineering-11-00240-t0A1">Table A1</xref> and <xref ref-type="table" rid="bioengineering-11-00240-t0A2">Table A2</xref>.&#x201D;</p>
+      </sec>
+      <sec id="sec5dot4-bioengineering-11-00240">
+        <title>5.4. Discussion and Future Scope</title>
+        <p>The discussion of the results unveils the considerable advancements achieved by the proposed hybrid U-Net model in precisely segmenting sub-retinal layers in OCT images. Integrating a dual attention mechanism, combining edge and spatial attention, has played a pivotal role in enhancing the model&#x2019;s ability to discern intricate details and capture features crucial for accurate segmentation. The superior performance across various segmentation categories, as evidenced by high Dice coefficients, establishes the effectiveness and robustness of the proposed model.</p>
+        <p>One notable aspect for future exploration is the extension of the model&#x2019;s capabilities to address sub-retinal fluid segmentation. The proposed model demonstrates excellence in segmenting sub-retinal layers, as a distinct category poses a valuable avenue for further refinement. Enhancing the model&#x2019;s sensitivity to fluid boundaries could contribute to a more comprehensive understanding of pathological conditions in retinal images.</p>
+        <p>Moreover, a promising prospect exists for refining the segmentation to achieve a more precise delineation of individual layers within the retina. Extending the segmentation to incorporate finer details, such as identifying specific sub-layers within the 13-layer structure of the retina, could provide more detailed insights into retinal health and pathology. This could be particularly beneficial in diagnosing and monitoring diseases with subtle layer-specific abnormalities.</p>
+        <p>Another dimension for future exploration involves the incorporation of a thickness measurement module for each segmented layer. Quantifying the thickness of individual retinal layers can offer quantitative metrics for clinical assessment, potentially aiding in the early detection and monitoring of diseases characterised by thickness variations. This addition would contribute to the model&#x2019;s utility in providing qualitative and quantitative information for clinical decision-making.</p>
+        <p>In conclusion, the proposed hybrid U-Net model is a significant jump forward in automated OCT image segmentation. The discussion and future scope outlined above underscore the model&#x2019;s potential for further refinement and expansion, emphasising its role as a valuable tool in advancing ophthalmic diagnostics and contributing to ongoing research in medical imaging.</p>
+      </sec>
+    </sec>
+    <sec id="sec6-bioengineering-11-00240" sec-type="conclusions">
+      <title>6. Conclusions</title>
+      <p>In conclusion, our research introduces an innovative approach utilizing a hybrid attention U-Net model for automating the segmentation of sub-retinal layers in OCT images. By incorporating edge and spatial attention mechanisms into the U-Net architecture, our model achieves superior segmentation accuracy compared to existing methods. In our evaluation of the hybrid U-Net model, we went beyond numerical assessments to comprehensively understand its performance. The model demonstrated exceptional accuracy with a coefficient of 0.97 and was further validated by an Adjusted Rand Index (ARI) of 0.97. Additional metrics such as Bangdiwala B (0.99) and Bennett S (0.97849) reinforced the model&#x2019;s robustness. Strength of Agreement (SOA) rankings, spanning from &#x2018;Almost Perfect&#x2019; to &#x2018;Very Strong&#x2019; across various benchmarks, further underscored its effectiveness. These meticulously calculated measures collectively highlight the model&#x2019;s accuracy and reliability across diverse criteria, offering valuable insights for real-world applications. While there remains potential for adding retinal fluid segmentation and achieving more precise layer measurements, our model&#x2019;s success signifies significant advancements in ocular imaging diagnostics. Moreover, its potential applications in real-world scenarios hold promise for further developments in medical predictive modelling.</p>
+    </sec>
+  </body>
+  <back>
+    <notes>
+      <title>Author Contributions</title>
+      <p>P.K.K.: conceptualization, algorithm development, data collection, validation, investigation, writing&#x2014;original draft preparation; W.H.A.: research development, writing&#x2014;review and editing, project administration. All authors have read and agreed to the published version of the manuscript.</p>
+    </notes>
+    <notes>
+      <title>Institutional Review Board Statement</title>
+      <p>Not applicable.</p>
+    </notes>
+    <notes>
+      <title>Informed Consent Statement</title>
+      <p>Not applicable.</p>
+    </notes>
+    <notes>
+      <title>Data Availability Statement</title>
+      <p>Data sources are cited within the article.</p>
+    </notes>
+    <notes notes-type="COI-statement">
+      <title>Conflicts of Interest</title>
+      <p>The authors declare no conflicts of interest.</p>
+    </notes>
+    <app-group>
+      <app id="app1-bioengineering-11-00240">
+        <title>Appendix A</title>
+        <table-wrap id="bioengineering-11-00240-t0A1" position="anchor">
+          <object-id pub-id-type="pii">bioengineering-11-00240-t0A1_Table A1</object-id>
+          <label>Table A1</label>
+          <caption>
+            <p>Overall statistics for the proposed model performance.</p>
+          </caption>
+          <table>
+            <thead>
+              <tr>
+                <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Measure</th>
+                <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Value</th>
+                <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Full Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" valign="middle">ACC Macro</td>
+                <td align="center" valign="middle">0.98</td>
+                <td align="left" valign="middle">Accuracy Macro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">ARI</td>
+                <td align="center" valign="middle">0.97</td>
+                <td align="left" valign="middle">Adjusted Rand Index</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">AUNP</td>
+                <td align="center" valign="middle">0.97</td>
+                <td align="left" valign="middle">Area Under the Receiver Operating Characteristic Curve for No Prevalence</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">AUNU</td>
+                <td align="center" valign="middle">0.89</td>
+                <td align="left" valign="middle">Area Under the Receiver Operating Characteristic Curve for No Uncertainty</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Bangdiwala B</td>
+                <td align="center" valign="middle">0.98</td>
+                <td align="left" valign="middle">Bangdiwala&#x2019;s B statistic</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Bennett S</td>
+                <td align="center" valign="middle">0.97</td>
+                <td align="left" valign="middle">Bennett S score</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">CBA</td>
+                <td align="center" valign="middle">0.76</td>
+                <td align="left" valign="middle">Confusion Angle</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">CSI</td>
+                <td align="center" valign="middle">0.67</td>
+                <td align="left" valign="middle">Critical Success Index</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Chi-Squared DF</td>
+                <td align="center" valign="middle">48</td>
+                <td align="left" valign="middle">Chi-Squared Degrees of Freedom</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Conditional Entropy</td>
+                <td align="center" valign="middle">0.15</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Cramer V</td>
+                <td align="center" valign="middle">0.83</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Cross Entropy</td>
+                <td align="center" valign="middle">1.69</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">F1 Macro</td>
+                <td align="center" valign="middle">0.81</td>
+                <td align="left" valign="middle">F1 Score Macro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">F1 Micro</td>
+                <td align="center" valign="middle">0.98</td>
+                <td align="left" valign="middle">F1 Score Micro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FNR Macro</td>
+                <td align="center" valign="middle">0.22</td>
+                <td align="left" valign="middle">False Negative Rate Macro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FNR Micro</td>
+                <td align="center" valign="middle">0.023</td>
+                <td align="left" valign="middle">False Negative Rate Micro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FPR Macro</td>
+                <td align="center" valign="middle">0.00366</td>
+                <td align="left" valign="middle">False Positive Rate Macro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FPR Micro</td>
+                <td align="center" valign="middle">0.00363</td>
+                <td align="left" valign="middle">False Positive Rate Micro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Gwet AC1</td>
+                <td align="center" valign="middle">0.96</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Hamming Loss</td>
+                <td align="center" valign="middle">0.025</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Joint Entropy</td>
+                <td align="center" valign="middle">1.83</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">KL Divergence</td>
+                <td align="center" valign="middle">0.00518</td>
+                <td align="left" valign="middle">Kullback&#x2013;Leibler Divergence</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Kappa</td>
+                <td align="center" valign="middle">0.95</td>
+                <td align="left" valign="middle">Cohen&#x2019;s Kappa</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Kappa No Prevalence</td>
+                <td align="center" valign="middle">0.94</td>
+                <td align="left" valign="middle">Cohen&#x2019;s Kappa No Prevalence</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Kappa Standard Error</td>
+                <td align="center" valign="middle">8 &#xD7; 10<sup>&#x2212;5</sup></td>
+                <td align="left" valign="middle">Cohen&#x2019;s Kappa Standard Error</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Kappa Unbiased</td>
+                <td align="center" valign="middle">0.95</td>
+                <td align="left" valign="middle">Cohen&#x2019;s Kappa Unbiased</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Krippendorff Alpha</td>
+                <td align="center" valign="middle">0.95</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Lambda A</td>
+                <td align="center" valign="middle">0.94</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Lambda B</td>
+                <td align="center" valign="middle">0.94</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Mutual Information</td>
+                <td align="center" valign="middle">1.53</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">NIR</td>
+                <td align="center" valign="middle">0.55</td>
+                <td align="left" valign="middle">Negative Predictive Value (NIR)</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Overall ACC</td>
+                <td align="center" valign="middle">0.97</td>
+                <td align="left" valign="middle">Overall Accuracy</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Overall CEN</td>
+                <td align="center" valign="middle">0.037</td>
+                <td align="left" valign="middle">Overall Cross Entropy</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Overall J</td>
+                <td align="center" valign="middle">0.71</td>
+                <td align="left" valign="middle">Overall Jaccard Index</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Overall MCC</td>
+                <td align="center" valign="middle">0.95</td>
+                <td align="left" valign="middle">Overall MCC: Overall Matthews Correlation Coefficient</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Overall MCEN</td>
+                <td align="center" valign="middle">0.061</td>
+                <td align="left" valign="middle">Overall MCEN: Overall Mean Cross Entropy</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Overall RACC</td>
+                <td align="center" valign="middle">0.39</td>
+                <td align="left" valign="middle">Overall RACC: Overall Relative Accuracy</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Overall RACCU</td>
+                <td align="center" valign="middle">0.39</td>
+                <td align="left" valign="middle">Overall RACCU: Overall Unweighted Relative Accuracy</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">PPV Macro</td>
+                <td align="center" valign="middle">0.86</td>
+                <td align="left" valign="middle">PPV Macro: Positive Predictive Value Macro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">PPV Micro</td>
+                <td align="center" valign="middle">0.97</td>
+                <td align="left" valign="middle">PPV Micro: Positive Predictive Value Micro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Pearson C</td>
+                <td align="center" valign="middle">0.96</td>
+                <td align="left" valign="middle">Pearson C: Pearson Correlation Coefficient</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Phi-Squared</td>
+                <td align="center" valign="middle">4.63</td>
+                <td align="left" valign="middle">Phi-Squared: Phi-Squared</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">RCI</td>
+                <td align="center" valign="middle">0.90</td>
+                <td align="left" valign="middle">RCI: Rogers Tanimoto Coefficient</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">SOA1 (Landis and Koch)</td>
+                <td align="center" valign="middle">Almost Perfect</td>
+                <td align="left" valign="middle">Strength of Agreement 1 (Landis and Koch)</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">SOA2 (Fleiss)</td>
+                <td align="center" valign="middle">Excellent</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">SOA3 (Altman)</td>
+                <td align="center" valign="middle">Very Good</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">SOA4 (Cicchetti)</td>
+                <td align="center" valign="middle">Excellent</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">SOA5 (Cramer)</td>
+                <td align="center" valign="middle">Very Strong</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">SOA6 (Matthews)</td>
+                <td align="center" valign="middle">Very Strong</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Scott PI</td>
+                <td align="center" valign="middle">0.95</td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Standard Error</td>
+                <td align="center" valign="middle">5 &#xD7; 10<sup>&#x2212;5</sup></td>
+                <td align="left" valign="middle"> </td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TNR Macro</td>
+                <td align="center" valign="middle">0.99</td>
+                <td align="left" valign="middle">True Negative Rate Macro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TNR Micro</td>
+                <td align="center" valign="middle">0.99</td>
+                <td align="left" valign="middle">True Negative Rate Micro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TPR Macro</td>
+                <td align="center" valign="middle">0.79</td>
+                <td align="left" valign="middle">True Positive Rate Macro</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle" style="border-bottom:solid thin">TPR Micro</td>
+                <td align="center" valign="middle" style="border-bottom:solid thin">0.97</td>
+                <td align="left" valign="middle" style="border-bottom:solid thin">True Positive Rate Micro</td>
+              </tr>
+            </tbody>
+          </table>
+        </table-wrap>
+        <table-wrap id="bioengineering-11-00240-t0A2" position="anchor">
+          <object-id pub-id-type="pii">bioengineering-11-00240-t0A2_Table A2</object-id>
+          <label>Table A2</label>
+          <caption>
+            <p>Class-wise performance of the model.</p>
+          </caption>
+          <table>
+            <thead>
+              <tr>
+                <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Class</th>
+                <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Above ILM</th>
+                <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">ILM-IPL/INL</th>
+                <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">IPL/INL-RPE</th>
+                <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">RPE-BM</th>
+                <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Under BM</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" valign="middle">ACC (Accuracy)</td>
+                <td align="right" valign="middle">0.99287</td>
+                <td align="right" valign="middle">0.98946</td>
+                <td align="right" valign="middle">0.985</td>
+                <td align="right" valign="middle">0.98622</td>
+                <td align="right" valign="middle">0.98362</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">AGF (Adjusted F-score)</td>
+                <td align="right" valign="middle">0.99631</td>
+                <td align="right" valign="middle">0.92087</td>
+                <td align="right" valign="middle">0.9657</td>
+                <td align="right" valign="middle">0.89807</td>
+                <td align="right" valign="middle">0.98048</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">AGM (Adjusted geometric mean)</td>
+                <td align="right" valign="middle">0.9929</td>
+                <td align="right" valign="middle">0.953</td>
+                <td align="right" valign="middle">0.9797</td>
+                <td align="right" valign="middle">0.94625</td>
+                <td align="right" valign="middle">0.98548</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">AM (Difference between automatic and manual classification)</td>
+                <td align="right" valign="middle">75295</td>
+                <td align="right" valign="middle">&#x2212;108039</td>
+                <td align="right" valign="middle">94754</td>
+                <td align="right" valign="middle">&#x2212;4484</td>
+                <td align="right" valign="middle">&#x2212;56344</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">AUC (Area under the ROC curve)</td>
+                <td align="right" valign="middle">0.99484</td>
+                <td align="right" valign="middle">0.91322</td>
+                <td align="right" valign="middle">0.97288</td>
+                <td align="right" valign="middle">0.90012</td>
+                <td align="right" valign="middle">0.9941</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">AUCI (AUC value interpretation)</td>
+                <td align="right" valign="middle">Excellent</td>
+                <td align="right" valign="middle">Excellent</td>
+                <td align="right" valign="middle">Excellent</td>
+                <td align="right" valign="middle">Excellent</td>
+                <td align="right" valign="middle">Excellent</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">AUPR (Area under the PR curve)</td>
+                <td align="right" valign="middle">0.9879</td>
+                <td align="right" valign="middle">0.90971</td>
+                <td align="right" valign="middle">0.91041</td>
+                <td align="right" valign="middle">0.818</td>
+                <td align="right" valign="middle">0.99423</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">BB (Braun-Blanquet similarity)</td>
+                <td align="right" valign="middle">0.97631</td>
+                <td align="right" valign="middle">0.82683</td>
+                <td align="right" valign="middle">0.86228</td>
+                <td align="right" valign="middle">0.80194</td>
+                <td align="right" valign="middle">0.98961</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">BCD (Bray&#x2013;Curtis dissimilarity)</td>
+                <td align="right" valign="middle">0.00342</td>
+                <td align="right" valign="middle">0.00491</td>
+                <td align="right" valign="middle">0.0043</td>
+                <td align="right" valign="middle">0.0002</td>
+                <td align="right" valign="middle">0.00256</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">BM (Informedness or bookmaker informedness)</td>
+                <td align="right" valign="middle">0.98968</td>
+                <td align="right" valign="middle">0.82645</td>
+                <td align="right" valign="middle">0.94575</td>
+                <td align="right" valign="middle">0.80023</td>
+                <td align="right" valign="middle">0.9882</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">CEN (Confusion entropy)</td>
+                <td align="right" valign="middle">0.02496</td>
+                <td align="right" valign="middle">0.107</td>
+                <td align="right" valign="middle">0.13045</td>
+                <td align="right" valign="middle">0.25073</td>
+                <td align="right" valign="middle">0.01327</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">DP (Discriminant power)</td>
+                <td align="right" valign="middle">2.92196</td>
+                <td align="right" valign="middle">2.25676</td>
+                <td align="right" valign="middle">1.7927</td>
+                <td align="right" valign="middle">1.86075</td>
+                <td align="right" valign="middle">2.6621</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">DPI (Discriminant power interpretation)</td>
+                <td align="right" valign="middle">Fair</td>
+                <td align="right" valign="middle">Fair</td>
+                <td align="right" valign="middle">Limited</td>
+                <td align="right" valign="middle">Limited</td>
+                <td align="right" valign="middle">Fair</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">ERR (Error rate)</td>
+                <td align="right" valign="middle">0.00713</td>
+                <td align="right" valign="middle">0.01054</td>
+                <td align="right" valign="middle">0.015</td>
+                <td align="right" valign="middle">0.00378</td>
+                <td align="right" valign="middle">0.00638</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">F0.5 (F0.5 score)</td>
+                <td align="right" valign="middle">0.98086</td>
+                <td align="right" valign="middle">0.95433</td>
+                <td align="right" valign="middle">0.87996</td>
+                <td align="right" valign="middle">0.82744</td>
+                <td align="right" valign="middle">0.99699</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">F1 (F1 score&#x2014;harmonic mean of precision and sensitivity)</td>
+                <td align="right" valign="middle">0.98777</td>
+                <td align="right" valign="middle">0.90216</td>
+                <td align="right" valign="middle">0.90787</td>
+                <td align="right" valign="middle">0.81769</td>
+                <td align="right" valign="middle">0.99421</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">F2 (F2 score)</td>
+                <td align="right" valign="middle">0.99477</td>
+                <td align="right" valign="middle">0.8554</td>
+                <td align="right" valign="middle">0.93761</td>
+                <td align="right" valign="middle">0.80816</td>
+                <td align="right" valign="middle">0.99145</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FDR (False discovery rate)</td>
+                <td align="right" valign="middle">0.02369</td>
+                <td align="right" valign="middle">0.0074</td>
+                <td align="right" valign="middle">0.13772</td>
+                <td align="right" valign="middle">0.16593</td>
+                <td align="right" valign="middle">0.00115</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FNR (Miss rate or false negative rate)</td>
+                <td align="right" valign="middle">0.00051</td>
+                <td align="right" valign="middle">0.17317</td>
+                <td align="right" valign="middle">0.04146</td>
+                <td align="right" valign="middle">0.19806</td>
+                <td align="right" valign="middle">0.01039</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FOR (False omission rate)</td>
+                <td align="right" valign="middle">0.00021</td>
+                <td align="right" valign="middle">0.0107</td>
+                <td align="right" valign="middle">0.0035</td>
+                <td align="right" valign="middle">0.00212</td>
+                <td align="right" valign="middle">0.01273</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FP (False positive/type 1 error/false alarm)</td>
+                <td align="right" valign="middle">76899</td>
+                <td align="right" valign="middle">3990</td>
+                <td align="right" valign="middle">129945</td>
+                <td align="right" valign="middle">18567</td>
+                <td align="right" valign="middle">6943</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">FPR (Fall-out or false positive rate)</td>
+                <td align="right" valign="middle">0.00981</td>
+                <td align="right" valign="middle">0.00039</td>
+                <td align="right" valign="middle">0.01279</td>
+                <td align="right" valign="middle">0.0017</td>
+                <td align="right" valign="middle">0.00141</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">G (G-measure geometric mean of precision and sensitivity)</td>
+                <td align="right" valign="middle">0.98784</td>
+                <td align="right" valign="middle">0.90593</td>
+                <td align="right" valign="middle">0.90914</td>
+                <td align="right" valign="middle">0.81785</td>
+                <td align="right" valign="middle">0.99422</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">GI (Gini index)</td>
+                <td align="right" valign="middle">0.98968</td>
+                <td align="right" valign="middle">0.82645</td>
+                <td align="right" valign="middle">0.94575</td>
+                <td align="right" valign="middle">0.80023</td>
+                <td align="right" valign="middle">0.9882</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">GM (G-mean geometric mean of specificity and sensitivity)</td>
+                <td align="right" valign="middle">0.99483</td>
+                <td align="right" valign="middle">0.90913</td>
+                <td align="right" valign="middle">0.97277</td>
+                <td align="right" valign="middle">0.89475</td>
+                <td align="right" valign="middle">0.99409</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">HD (Hamming distance)</td>
+                <td align="right" valign="middle">78503</td>
+                <td align="right" valign="middle">116019</td>
+                <td align="right" valign="middle">165136</td>
+                <td align="right" valign="middle">41618</td>
+                <td align="right" valign="middle">70230</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">IBA (Index of balanced accuracy)</td>
+                <td align="right" valign="middle">0.9989</td>
+                <td align="right" valign="middle">0.68371</td>
+                <td align="right" valign="middle">0.91915</td>
+                <td align="right" valign="middle">0.64337</td>
+                <td align="right" valign="middle">0.97935</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">ICSI (Individual classification success index)</td>
+                <td align="right" valign="middle">0.97581</td>
+                <td align="right" valign="middle">0.81943</td>
+                <td align="right" valign="middle">0.82083</td>
+                <td align="right" valign="middle">0.63601</td>
+                <td align="right" valign="middle">0.98846</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">IS (Information score)</td>
+                <td align="right" valign="middle">1.7611</td>
+                <td align="right" valign="middle">4.07832</td>
+                <td align="right" valign="middle">3.48345</td>
+                <td align="right" valign="middle">6.30205</td>
+                <td align="right" valign="middle">0.85181</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">J (Jaccard index)</td>
+                <td align="right" valign="middle">0.97583</td>
+                <td align="right" valign="middle">0.82177</td>
+                <td align="right" valign="middle">0.83128</td>
+                <td align="right" valign="middle">0.6916</td>
+                <td align="right" valign="middle">0.98849</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">MCC (Matthews correlation coefficient)</td>
+                <td align="right" valign="middle">0.98287</td>
+                <td align="right" valign="middle">0.90083</td>
+                <td align="right" valign="middle">0.90122</td>
+                <td align="right" valign="middle">0.81594</td>
+                <td align="right" valign="middle">0.98716</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">MCCI (Matthews correlation coefficient interpretation)</td>
+                <td align="right" valign="middle">Very Strong</td>
+                <td align="right" valign="middle">Very Strong</td>
+                <td align="right" valign="middle">Very Strong</td>
+                <td align="right" valign="middle">Strong</td>
+                <td align="right" valign="middle">Very Strong</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">MCEN (Modified confusion entropy)</td>
+                <td align="right" valign="middle">0.04307</td>
+                <td align="right" valign="middle">0.15441</td>
+                <td align="right" valign="middle">0.20022</td>
+                <td align="right" valign="middle">0.36271</td>
+                <td align="right" valign="middle">0.02338</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">MK (Markedness)</td>
+                <td align="right" valign="middle">0.97611</td>
+                <td align="right" valign="middle">0.9819</td>
+                <td align="right" valign="middle">0.85879</td>
+                <td align="right" valign="middle">0.83196</td>
+                <td align="right" valign="middle">0.98612</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">N (Condition negative)</td>
+                <td align="right" valign="middle">7838776</td>
+                <td align="right" valign="middle">10363105</td>
+                <td align="right" valign="middle">10161226</td>
+                <td align="right" valign="middle">10893666</td>
+                <td align="right" valign="middle">4916500</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">NLR (Negative likelihood ratio)</td>
+                <td align="right" valign="middle">0.00051</td>
+                <td align="right" valign="middle">0.17323</td>
+                <td align="right" valign="middle">0.042</td>
+                <td align="right" valign="middle">0.1984</td>
+                <td align="right" valign="middle">0.0104</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">NLRI (Negative likelihood ratio interpretation)</td>
+                <td align="right" valign="middle">Good</td>
+                <td align="right" valign="middle">Fair</td>
+                <td align="right" valign="middle">Good</td>
+                <td align="right" valign="middle">Fair</td>
+                <td align="right" valign="middle">Good</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">NPV (Negative predictive value)</td>
+                <td align="right" valign="middle">0.99979</td>
+                <td align="right" valign="middle">0.9893</td>
+                <td align="right" valign="middle">0.9965</td>
+                <td align="right" valign="middle">0.99788</td>
+                <td align="right" valign="middle">0.98727</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">OC (Overlap coefficient)</td>
+                <td align="right" valign="middle">0.99949</td>
+                <td align="right" valign="middle">0.9926</td>
+                <td align="right" valign="middle">0.95854</td>
+                <td align="right" valign="middle">0.83407</td>
+                <td align="right" valign="middle">0.99885</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">OOC (Otsuka-Ochiai coefficient)</td>
+                <td align="right" valign="middle">0.98784</td>
+                <td align="right" valign="middle">0.90593</td>
+                <td align="right" valign="middle">0.90914</td>
+                <td align="right" valign="middle">0.81785</td>
+                <td align="right" valign="middle">0.99422</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">OP (Optimized precision)</td>
+                <td align="right" valign="middle">0.98819</td>
+                <td align="right" valign="middle">0.89486</td>
+                <td align="right" valign="middle">0.97027</td>
+                <td align="right" valign="middle">0.88715</td>
+                <td align="right" valign="middle">0.98911</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">PPV (Precision or positive predictive value)</td>
+                <td align="right" valign="middle">0.97631</td>
+                <td align="right" valign="middle">0.9926</td>
+                <td align="right" valign="middle">0.86228</td>
+                <td align="right" valign="middle">0.83407</td>
+                <td align="right" valign="middle">0.99885</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">PRE (Prevalence)</td>
+                <td align="right" valign="middle">0.28803</td>
+                <td align="right" valign="middle">0.05876</td>
+                <td align="right" valign="middle">0.0771</td>
+                <td align="right" valign="middle">0.01057</td>
+                <td align="right" valign="middle">0.55345</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">Q (Yule Q&#x2014;coefficient of colligation)</td>
+                <td align="right" valign="middle">0.99999</td>
+                <td align="right" valign="middle">0.99984</td>
+                <td align="right" valign="middle">0.99888</td>
+                <td align="right" valign="middle">0.99916</td>
+                <td align="right" valign="middle">0.99997</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">QI (Yule Q interpretation)</td>
+                <td align="right" valign="middle">Strong</td>
+                <td align="right" valign="middle">Strong</td>
+                <td align="right" valign="middle">Strong</td>
+                <td align="right" valign="middle">Strong</td>
+                <td align="right" valign="middle">Strong</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">RACC (Random accuracy)</td>
+                <td align="right" valign="middle">0.08493</td>
+                <td align="right" valign="middle">0.00288</td>
+                <td align="right" valign="middle">0.00661</td>
+                <td align="right" valign="middle">0.00011</td>
+                <td align="right" valign="middle">0.30348</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">RACCU (Random accuracy unbiased)</td>
+                <td align="right" valign="middle">0.08495</td>
+                <td align="right" valign="middle">0.0029</td>
+                <td align="right" valign="middle">0.00663</td>
+                <td align="right" valign="middle">0.00011</td>
+                <td align="right" valign="middle">0.30348</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TN (True negative/correct rejection)</td>
+                <td align="right" valign="middle">7761877</td>
+                <td align="right" valign="middle">10359115</td>
+                <td align="right" valign="middle">10031281</td>
+                <td align="right" valign="middle">10875099</td>
+                <td align="right" valign="middle">4909557</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TNR (Specificity or true negative rate)</td>
+                <td align="right" valign="middle">0.99019</td>
+                <td align="right" valign="middle">0.99961</td>
+                <td align="right" valign="middle">0.98721</td>
+                <td align="right" valign="middle">0.9983</td>
+                <td align="right" valign="middle">0.99859</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TON (Test outcome negative)</td>
+                <td align="right" valign="middle">7763481</td>
+                <td align="right" valign="middle">10471144</td>
+                <td align="right" valign="middle">10066472</td>
+                <td align="right" valign="middle">10898150</td>
+                <td align="right" valign="middle">4972844</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TOP (Test outcome positive)</td>
+                <td align="right" valign="middle">3246567</td>
+                <td align="right" valign="middle">538904</td>
+                <td align="right" valign="middle">943576</td>
+                <td align="right" valign="middle">111898</td>
+                <td align="right" valign="middle">6037204</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TP (True positive/hit)</td>
+                <td align="right" valign="middle">3169668</td>
+                <td align="right" valign="middle">534914</td>
+                <td align="right" valign="middle">813631</td>
+                <td align="right" valign="middle">93331</td>
+                <td align="right" valign="middle">6030261</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle">TPR (Sensitivity, recall, hit rate, or true positive rate)</td>
+                <td align="right" valign="middle">0.99949</td>
+                <td align="right" valign="middle">0.82683</td>
+                <td align="right" valign="middle">0.95854</td>
+                <td align="right" valign="middle">0.80194</td>
+                <td align="right" valign="middle">0.98961</td>
+              </tr>
+              <tr>
+                <td align="left" valign="middle" style="border-bottom:solid thin">Y (Youden index)</td>
+                <td align="right" valign="middle" style="border-bottom:solid thin">0.98968</td>
+                <td align="right" valign="middle" style="border-bottom:solid thin">0.82645</td>
+                <td align="right" valign="middle" style="border-bottom:solid thin">0.94575</td>
+                <td align="right" valign="middle" style="border-bottom:solid thin">0.80023</td>
+                <td align="right" valign="middle" style="border-bottom:solid thin">0.9882</td>
+              </tr>
+            </tbody>
+          </table>
+        </table-wrap>
+      </app>
+    </app-group>
+    <ref-list>
+      <title>References</title>
+      <ref id="B1-bioengineering-11-00240">
+        <label>1.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Hee</surname>
+              <given-names>M.R.</given-names>
+            </name>
+          </person-group>
+          <article-title>Optical Coherence Tomography of the Human Retina</article-title>
+          <source>Arch. Ophthalmol.</source>
+          <year>1995</year>
+          <volume>113</volume>
+          <fpage>325</fpage>
+          <pub-id pub-id-type="doi">10.1001/archopht.1995.01100030081025</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B2-bioengineering-11-00240">
+        <label>2.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Karn</surname>
+              <given-names>P.K.</given-names>
+            </name>
+            <name>
+              <surname>Abdulla</surname>
+              <given-names>W.H.</given-names>
+            </name>
+          </person-group>
+          <article-title>On Machine Learning in Clinical Interpretation of Retinal Diseases Using OCT Images</article-title>
+          <source>Bioengineering</source>
+          <year>2023</year>
+          <volume>10</volume>
+          <elocation-id>407</elocation-id>
+          <pub-id pub-id-type="doi">10.3390/bioengineering10040407</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B3-bioengineering-11-00240">
+        <label>3.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Sakthi Sree Devi</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Ramkumar</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Vinuraj Kumar</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Sasi</surname>
+              <given-names>G.</given-names>
+            </name>
+          </person-group>
+          <article-title>Detection of Diabetic Retinopathy Using OCT Image</article-title>
+          <source>Mater. Today Proc.</source>
+          <year>2021</year>
+          <volume>47</volume>
+          <fpage>185</fpage>
+          <lpage>190</lpage>
+          <pub-id pub-id-type="doi">10.1016/j.matpr.2021.04.070</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B4-bioengineering-11-00240">
+        <label>4.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Shelhamer</surname>
+              <given-names>E.</given-names>
+            </name>
+            <name>
+              <surname>Long</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Darrell</surname>
+              <given-names>T.</given-names>
+            </name>
+          </person-group>
+          <article-title>Fully Convolutional Networks for Semantic Segmentation</article-title>
+          <source>IEEE Trans. Pattern Anal. Mach. Intell.</source>
+          <year>2017</year>
+          <volume>39</volume>
+          <fpage>640</fpage>
+          <lpage>651</lpage>
+          <pub-id pub-id-type="doi">10.1109/TPAMI.2016.2572683</pub-id>
+          <pub-id pub-id-type="pmid">27244717</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B5-bioengineering-11-00240">
+        <label>5.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Ghazal</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Ali</surname>
+              <given-names>S.S.</given-names>
+            </name>
+            <name>
+              <surname>Mahmoud</surname>
+              <given-names>A.H.</given-names>
+            </name>
+            <name>
+              <surname>Shalaby</surname>
+              <given-names>A.M.</given-names>
+            </name>
+            <name>
+              <surname>El-Baz</surname>
+              <given-names>A.</given-names>
+            </name>
+          </person-group>
+          <article-title>Accurate Detection of Non-Proliferative Diabetic Retinopathy in Optical Coherence Tomography Images Using Convolutional Neural Networks</article-title>
+          <source>IEEE Access</source>
+          <year>2020</year>
+          <volume>8</volume>
+          <fpage>34387</fpage>
+          <lpage>34397</lpage>
+          <pub-id pub-id-type="doi">10.1109/ACCESS.2020.2974158</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B6-bioengineering-11-00240">
+        <label>6.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Rajagopalan</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Narasimhan</surname>
+              <given-names>V.</given-names>
+            </name>
+            <name>
+              <surname>Kunnavakkam Vinjimoor</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Aiyer</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <article-title>Deep CNN Framework for Retinal Disease Diagnosis Using Optical Coherence Tomography Images</article-title>
+          <source>J. Ambient. Intell. Humaniz. Comput.</source>
+          <year>2021</year>
+          <volume>12</volume>
+          <fpage>7569</fpage>
+          <lpage>7580</lpage>
+          <pub-id pub-id-type="doi">10.1007/s12652-020-02460-7</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B7-bioengineering-11-00240">
+        <label>7.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Dong</surname>
+              <given-names>Y.N.</given-names>
+            </name>
+            <name>
+              <surname>Liang</surname>
+              <given-names>G.S.</given-names>
+            </name>
+          </person-group>
+          <article-title>Research and Discussion on Image Recognition and Classification Algorithm Based on Deep Learning</article-title>
+          <source>Proceedings of the 2019 International Conference on Machine Learning, Big Data and Business Intelligence (MLBDBI)</source>
+          <conf-loc>Taiyuan, China</conf-loc>
+          <conf-date>8&#x2013;10 November 2019</conf-date>
+          <fpage>274</fpage>
+          <lpage>278</lpage>
+          <pub-id pub-id-type="doi">10.1109/MLBDBI48998.2019.00061</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B8-bioengineering-11-00240">
+        <label>8.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Zang</surname>
+              <given-names>P.</given-names>
+            </name>
+            <name>
+              <surname>Hormel</surname>
+              <given-names>T.T.</given-names>
+            </name>
+            <name>
+              <surname>Hwang</surname>
+              <given-names>T.S.</given-names>
+            </name>
+            <name>
+              <surname>Bailey</surname>
+              <given-names>S.T.</given-names>
+            </name>
+            <name>
+              <surname>Huang</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Jia</surname>
+              <given-names>Y.</given-names>
+            </name>
+          </person-group>
+          <article-title>Deep-Learning&#x2013;Aided Diagnosis of Diabetic Retinopathy, Age-Related Macular Degeneration, and Glaucoma Based on Structural and Angiographic OCT</article-title>
+          <source>Ophthalmol. Sci.</source>
+          <year>2023</year>
+          <volume>3</volume>
+          <fpage>100245</fpage>
+          <pub-id pub-id-type="doi">10.1016/j.xops.2022.100245</pub-id>
+          <pub-id pub-id-type="pmid">36579336</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B9-bioengineering-11-00240">
+        <label>9.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Wu</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>Q.</given-names>
+            </name>
+            <name>
+              <surname>He</surname>
+              <given-names>X.J.</given-names>
+            </name>
+            <name>
+              <surname>Li</surname>
+              <given-names>P.</given-names>
+            </name>
+            <name>
+              <surname>Fan</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Yuan</surname>
+              <given-names>S.T.</given-names>
+            </name>
+            <name>
+              <surname>Park</surname>
+              <given-names>H.</given-names>
+            </name>
+          </person-group>
+          <article-title>Automatic Subretinal Fluid Segmentation of Retinal SD-OCT Images with Neurosensory Retinal Detachment Guided by Enface Fundus Imaging</article-title>
+          <source>IEEE Trans. Biomed. Eng.</source>
+          <year>2018</year>
+          <volume>65</volume>
+          <fpage>87</fpage>
+          <lpage>95</lpage>
+          <pub-id pub-id-type="doi">10.1109/TBME.2017.2695461</pub-id>
+          <pub-id pub-id-type="pmid">28436839</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B10-bioengineering-11-00240">
+        <label>10.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Islam</surname>
+              <given-names>K.T.</given-names>
+            </name>
+            <name>
+              <surname>Wijewickrema</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>O&#x2019;Leary</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>Identifying Diabetic Retinopathy from OCT Images Using Deep Transfer Learning with Artificial Neural Networks</article-title>
+          <source>Proceedings of the 2019 IEEE 32nd International Symposium on Computer-Based Medical Systems (CBMS)</source>
+          <conf-loc>Cordoba, Spain</conf-loc>
+          <conf-date>5&#x2013;7 June 2019</conf-date>
+          <volume>Volume 2019</volume>
+          <fpage>281</fpage>
+          <lpage>286</lpage>
+          <pub-id pub-id-type="doi">10.1109/CBMS.2019.00066</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B11-bioengineering-11-00240">
+        <label>11.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Garvin</surname>
+              <given-names>M.K.</given-names>
+            </name>
+            <name>
+              <surname>Abr&#xE0;moff</surname>
+              <given-names>M.D.</given-names>
+            </name>
+            <name>
+              <surname>Wu</surname>
+              <given-names>X.</given-names>
+            </name>
+            <name>
+              <surname>Russell</surname>
+              <given-names>S.R.</given-names>
+            </name>
+            <name>
+              <surname>Burns</surname>
+              <given-names>T.L.</given-names>
+            </name>
+            <name>
+              <surname>Sonka</surname>
+              <given-names>M.</given-names>
+            </name>
+          </person-group>
+          <article-title>Automated 3-D Intraretinal Layer Segmentation of Macular Spectral-Domain Optical Coherence Tomography Images</article-title>
+          <source>IEEE Trans. Med. Imaging</source>
+          <year>2009</year>
+          <volume>28</volume>
+          <fpage>1436</fpage>
+          <lpage>1447</lpage>
+          <pub-id pub-id-type="doi">10.1109/TMI.2009.2016958</pub-id>
+          <pub-id pub-id-type="pmid">19278927</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B12-bioengineering-11-00240">
+        <label>12.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Li</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Teng</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Tang</surname>
+              <given-names>Q.</given-names>
+            </name>
+            <name>
+              <surname>Song</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <article-title>Detection and Classification of Power Quality Disturbances Using Double Resolution S-Transform and DAG-SVMs</article-title>
+          <source>IEEE Trans. Instrum. Meas.</source>
+          <year>2016</year>
+          <volume>65</volume>
+          <fpage>2302</fpage>
+          <lpage>2312</lpage>
+          <pub-id pub-id-type="doi">10.1109/TIM.2016.2578518</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B13-bioengineering-11-00240">
+        <label>13.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Dufour</surname>
+              <given-names>P.A.</given-names>
+            </name>
+            <name>
+              <surname>Ceklic</surname>
+              <given-names>L.</given-names>
+            </name>
+            <name>
+              <surname>Abdillahi</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Schroder</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>De Dzanet</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Wolf-Schnurrbusch</surname>
+              <given-names>U.</given-names>
+            </name>
+            <name>
+              <surname>Kowal</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <article-title>Graph-Based Multi-Surface Segmentation of OCT Data Using Trained Hard and Soft Constraints</article-title>
+          <source>IEEE Trans. Med. Imaging</source>
+          <year>2013</year>
+          <volume>32</volume>
+          <fpage>531</fpage>
+          <lpage>543</lpage>
+          <pub-id pub-id-type="doi">10.1109/TMI.2012.2225152</pub-id>
+          <pub-id pub-id-type="pmid">23086520</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B14-bioengineering-11-00240">
+        <label>14.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Novosel</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>De Jong</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Van Velthoven</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Vermeer</surname>
+              <given-names>K.A.</given-names>
+            </name>
+            <name>
+              <surname>Vliet</surname>
+              <given-names>L.J.</given-names>
+            </name>
+          </person-group>
+          <article-title>Van locally-adaptive loosely-coupled level sets for retinal layer and fluid segmentation in subjects with central serous retinopathy</article-title>
+          <source>Proceedings of the 2016 IEEE 13th International Symposium on Biomedical Imaging (ISBI)</source>
+          <conf-loc>Prague, Czech Republic</conf-loc>
+          <conf-date>13&#x2013;16 April 2016</conf-date>
+          <fpage>702</fpage>
+          <lpage>705</lpage>
+          <pub-id pub-id-type="doi">10.1109/ISBI.2016.7493363</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B15-bioengineering-11-00240">
+        <label>15.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Song</surname>
+              <given-names>Q.</given-names>
+            </name>
+            <name>
+              <surname>Bai</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Garvin</surname>
+              <given-names>M.K.</given-names>
+            </name>
+            <name>
+              <surname>Sonka</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Buatti</surname>
+              <given-names>J.M.</given-names>
+            </name>
+          </person-group>
+          <article-title>Optimal Multiple Surface Segmentation With Shape and Context Priors</article-title>
+          <source>IEEE Trans. Med. Imaging</source>
+          <year>2013</year>
+          <volume>32</volume>
+          <fpage>376</fpage>
+          <lpage>386</lpage>
+          <pub-id pub-id-type="doi">10.1109/TMI.2012.2227120</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B16-bioengineering-11-00240">
+        <label>16.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Lang</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Carass</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Hauser</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Sotirchos</surname>
+              <given-names>E.S.</given-names>
+            </name>
+            <name>
+              <surname>Calabresi</surname>
+              <given-names>P.A.</given-names>
+            </name>
+            <name>
+              <surname>Ying</surname>
+              <given-names>H.S.</given-names>
+            </name>
+            <name>
+              <surname>Prince</surname>
+              <given-names>J.L.</given-names>
+            </name>
+          </person-group>
+          <article-title>Retinal Layer Segmentation of Macular OCT Images Using Boundary Classification</article-title>
+          <source>Biomed. Opt. Express</source>
+          <year>2013</year>
+          <volume>4</volume>
+          <fpage>518</fpage>
+          <lpage>533</lpage>
+          <pub-id pub-id-type="doi">10.1364/BOE.4.001133</pub-id>
+          <pub-id pub-id-type="pmid">23847738</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B17-bioengineering-11-00240">
+        <label>17.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Liu</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Carass</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Solomon</surname>
+              <given-names>S.D.</given-names>
+            </name>
+            <name>
+              <surname>Saidha</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Calabresi</surname>
+              <given-names>P.A.</given-names>
+            </name>
+            <name>
+              <surname>Prince</surname>
+              <given-names>J.L.</given-names>
+            </name>
+          </person-group>
+          <article-title>Multi-Layer Fast Level Set Segmentation for Macular OCT</article-title>
+          <source>Proceedings of the 2018 IEEE 15th International Symposium on Biomedical Imaging (ISBI 2018)</source>
+          <conf-loc>Washington, DC, USA</conf-loc>
+          <conf-date>4&#x2013;7 April 2018</conf-date>
+          <fpage>1445</fpage>
+          <lpage>1448</lpage>
+          <pub-id pub-id-type="doi">10.1109/ISBI.2018.8363844</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B18-bioengineering-11-00240">
+        <label>18.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Xiang</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Tian</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Yang</surname>
+              <given-names>X.</given-names>
+            </name>
+            <name>
+              <surname>Shi</surname>
+              <given-names>F.</given-names>
+            </name>
+            <name>
+              <surname>Zhu</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>X.</given-names>
+            </name>
+          </person-group>
+          <article-title>Automatic Segmentation of Retinal Layer in OCT Images With Choroidal Neovascularization</article-title>
+          <source>IEEE Trans. Image Process.</source>
+          <year>2018</year>
+          <volume>27</volume>
+          <fpage>5880</fpage>
+          <lpage>5891</lpage>
+          <pub-id pub-id-type="doi">10.1109/TIP.2018.2860255</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B19-bioengineering-11-00240">
+        <label>19.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Lee</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Charon</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Charlier</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Popuri</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Lebed</surname>
+              <given-names>E.</given-names>
+            </name>
+            <name>
+              <surname>Sarunic</surname>
+              <given-names>M.V.</given-names>
+            </name>
+            <name>
+              <surname>Trouv&#xE9;</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Beg</surname>
+              <given-names>M.F.</given-names>
+            </name>
+          </person-group>
+          <article-title>Atlas-Based Shape Analysis and Classification of Retinal Optical Coherence Tomography Images Using the Functional Shape (Fshape) Framework</article-title>
+          <source>Med. Image Anal.</source>
+          <year>2017</year>
+          <volume>35</volume>
+          <fpage>570</fpage>
+          <lpage>581</lpage>
+          <pub-id pub-id-type="doi">10.1016/j.media.2016.08.012</pub-id>
+          <pub-id pub-id-type="pmid">27689896</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B20-bioengineering-11-00240">
+        <label>20.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Yu</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Shi</surname>
+              <given-names>F.</given-names>
+            </name>
+            <name>
+              <surname>Gao</surname>
+              <given-names>E.</given-names>
+            </name>
+            <name>
+              <surname>Zhu</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>X.</given-names>
+            </name>
+          </person-group>
+          <article-title>Shared-Hole Graph Search with Adaptive Constraints for 3D Optic Nerve Head Optical Coherence Tomography Image Segmentation</article-title>
+          <source>Biomed. Opt. Express</source>
+          <year>2018</year>
+          <volume>9</volume>
+          <fpage>34</fpage>
+          <lpage>46</lpage>
+          <pub-id pub-id-type="doi">10.1364/BOE.9.000962</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B21-bioengineering-11-00240">
+        <label>21.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Fang</surname>
+              <given-names>L.</given-names>
+            </name>
+            <name>
+              <surname>Cunefare</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Guymer</surname>
+              <given-names>R.H.</given-names>
+            </name>
+            <name>
+              <surname>Li</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Farsiu</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>Automatic Segmentation of Nine Retinal Layer Boundaries in OCT Images of Non-Exudative AMD Patients Using Deep Learning and Graph Search</article-title>
+          <source>Biomed. Opt. Express</source>
+          <year>2017</year>
+          <volume>8</volume>
+          <fpage>2732</fpage>
+          <lpage>2744</lpage>
+          <pub-id pub-id-type="doi">10.1364/BOE.8.002732</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B22-bioengineering-11-00240">
+        <label>22.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Roy</surname>
+              <given-names>A.G.</given-names>
+            </name>
+            <name>
+              <surname>Conjeti</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Karri</surname>
+              <given-names>S.P.K.</given-names>
+            </name>
+            <name>
+              <surname>Sheet</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Katouzian</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Wachinger</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Navab</surname>
+              <given-names>N.</given-names>
+            </name>
+          </person-group>
+          <article-title>ReLayNet: Retinal Layer and Fluid Segmentation of Macular Optical Coherence Tomography Using Fully Convolutional Networks</article-title>
+          <source>Biomed. Opt. Express</source>
+          <year>2017</year>
+          <volume>8</volume>
+          <fpage>111</fpage>
+          <lpage>118</lpage>
+          <pub-id pub-id-type="doi">10.1364/BOE.8.003627</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B23-bioengineering-11-00240">
+        <label>23.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Wang</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Wei</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Qiu</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Li</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>He</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Member</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>Boundary Aware U-Net for Retinal Layers Segmentation in Optical Coherence Tomography Images</article-title>
+          <source>IEEE J. Biomed. Health Inform.</source>
+          <year>2021</year>
+          <volume>25</volume>
+          <fpage>3029</fpage>
+          <lpage>3040</lpage>
+          <pub-id pub-id-type="doi">10.1109/JBHI.2021.3066208</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B24-bioengineering-11-00240">
+        <label>24.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Apostolopoulos</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>De Zanet</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Ciller</surname>
+              <given-names>C.</given-names>
+            </name>
+          </person-group>
+          <article-title>Pathological OCT Retinal Layer Segmentation Using Branch Residual U-Shape Networks</article-title>
+          <source>Proceedings of the Medical Image Computing and Computer Assisted Intervention&#x2013;MICCAI 2017: 20th International Conference</source>
+          <conf-loc>Quebec City, QC, Canada</conf-loc>
+          <conf-date>11&#x2013;13 September 2017</conf-date>
+        </element-citation>
+      </ref>
+      <ref id="B25-bioengineering-11-00240">
+        <label>25.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Li</surname>
+              <given-names>Q.</given-names>
+            </name>
+            <name>
+              <surname>Li</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>He</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Guan</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>R.</given-names>
+            </name>
+            <name>
+              <surname>Xu</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>T.</given-names>
+            </name>
+            <name>
+              <surname>Qi</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Mei</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>W.</given-names>
+            </name>
+          </person-group>
+          <article-title>Deepretina: Layer Segmentation of Retina in OCT Images Using Deep Learning</article-title>
+          <source>Transl. Vis. Sci. Technol.</source>
+          <year>2020</year>
+          <volume>9</volume>
+          <fpage>61</fpage>
+          <pub-id pub-id-type="doi">10.1167/tvst.9.2.61</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B26-bioengineering-11-00240">
+        <label>26.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Gopinath</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Rangrej</surname>
+              <given-names>S.B.</given-names>
+            </name>
+            <name>
+              <surname>Sivaswamy</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <article-title>A Deep Learning Framework for Segmentation of Retinal Layers from OCT Images</article-title>
+          <source>Proceedings of the 2017 4th IAPR Asian Conference on Pattern Recognition (ACPR)</source>
+          <conf-loc>Nanjing, China</conf-loc>
+          <conf-date>26&#x2013;29 November 2017</conf-date>
+          <fpage>888</fpage>
+          <lpage>893</lpage>
+          <pub-id pub-id-type="doi">10.1109/ACPR.2017.121</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B27-bioengineering-11-00240">
+        <label>27.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Hu</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Liu</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Li</surname>
+              <given-names>X.</given-names>
+            </name>
+            <name>
+              <surname>Zhang</surname>
+              <given-names>Y.</given-names>
+            </name>
+          </person-group>
+          <article-title>Embedded Residual Recurrent Network and Graph Search for the Segmentation of Retinal Layer Boundaries in Optical Coherence Tomography</article-title>
+          <source>IEEE Trans. Instrum. Meas.</source>
+          <year>2021</year>
+          <volume>70</volume>
+          <fpage>1</fpage>
+          <lpage>17</lpage>
+          <pub-id pub-id-type="doi">10.1109/TIM.2021.3072121</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B28-bioengineering-11-00240">
+        <label>28.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Xue</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Guo</surname>
+              <given-names>X.</given-names>
+            </name>
+          </person-group>
+          <article-title>CTS-Net: A Segmentation Network for Glaucoma Optical Coherence Tomography Retinal Layer Images</article-title>
+          <source>Bioengineering</source>
+          <year>2023</year>
+          <volume>10</volume>
+          <elocation-id>230</elocation-id>
+          <pub-id pub-id-type="doi">10.3390/bioengineering10020230</pub-id>
+          <pub-id pub-id-type="pmid">36829724</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B29-bioengineering-11-00240">
+        <label>29.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Li</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Huang</surname>
+              <given-names>G.</given-names>
+            </name>
+            <name>
+              <surname>Zou</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Zhang</surname>
+              <given-names>T.</given-names>
+            </name>
+            <name>
+              <surname>Xu</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Cai</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>T.</given-names>
+            </name>
+            <name>
+              <surname>Sun</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <etal/>
+          </person-group>
+          <article-title>Segmentation of Low-Light Optical Coherence Tomography Angiography Images under the Constraints of Vascular Network Topology</article-title>
+          <source>Sensors</source>
+          <year>2024</year>
+          <volume>24</volume>
+          <elocation-id>774</elocation-id>
+          <pub-id pub-id-type="doi">10.3390/s24030774</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B30-bioengineering-11-00240">
+        <label>30.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Marciniak</surname>
+              <given-names>T.</given-names>
+            </name>
+            <name>
+              <surname>Stankiewicz</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Zaradzki</surname>
+              <given-names>P.</given-names>
+            </name>
+          </person-group>
+          <article-title>Neural Networks Application for Accurate Retina Vessel Segmentation from OCT Fundus Reconstruction</article-title>
+          <source>Sensors</source>
+          <year>2023</year>
+          <volume>23</volume>
+          <elocation-id>1870</elocation-id>
+          <pub-id pub-id-type="doi">10.3390/s23041870</pub-id>
+          <pub-id pub-id-type="pmid">36850467</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B31-bioengineering-11-00240">
+        <label>31.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Viedma</surname>
+              <given-names>I.A.</given-names>
+            </name>
+            <name>
+              <surname>Alonso-Caneiro</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Read</surname>
+              <given-names>S.A.</given-names>
+            </name>
+            <name>
+              <surname>Collins</surname>
+              <given-names>M.J.</given-names>
+            </name>
+          </person-group>
+          <article-title>OCT Retinal and Choroidal Layer Instance Segmentation Using Mask R-CNN</article-title>
+          <source>Sensors</source>
+          <year>2022</year>
+          <volume>22</volume>
+          <elocation-id>2016</elocation-id>
+          <pub-id pub-id-type="doi">10.3390/s22052016</pub-id>
+          <pub-id pub-id-type="pmid">35271165</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B32-bioengineering-11-00240">
+        <label>32.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Ronneberger</surname>
+              <given-names>O.</given-names>
+            </name>
+            <name>
+              <surname>Fischer</surname>
+              <given-names>P.</given-names>
+            </name>
+            <name>
+              <surname>Brox</surname>
+              <given-names>T.</given-names>
+            </name>
+          </person-group>
+          <article-title>U-Net: Convolutional Networks for Biomedical Image Segmentation</article-title>
+          <source>Proceedings of the Medical Image Computing and Computer-Assisted Intervention&#x2013;MICCAI 2015: 18th International Conference</source>
+          <conf-loc>Munich, Germany</conf-loc>
+          <conf-date>5&#x2013;9 October 2015</conf-date>
+          <person-group person-group-type="editor">
+            <name>
+              <surname>Navab</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Hornegger</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Wells</surname>
+              <given-names>W.M.</given-names>
+            </name>
+            <name>
+              <surname>Frangi</surname>
+              <given-names>A.F.</given-names>
+            </name>
+          </person-group>
+          <publisher-name>Springer International Publishing</publisher-name>
+          <publisher-loc>Cham, Switzerland</publisher-loc>
+          <year>2015</year>
+          <fpage>234</fpage>
+          <lpage>241</lpage>
+        </element-citation>
+      </ref>
+      <ref id="B33-bioengineering-11-00240">
+        <label>33.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Gao</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Kong</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Niu</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Li</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>Y.</given-names>
+            </name>
+          </person-group>
+          <article-title>Automatic Retinal Layer Segmentation in SD-OCT Images with CSC Guided by Spatial Characteristics</article-title>
+          <source>Multimed. Tools Appl.</source>
+          <year>2020</year>
+          <volume>79</volume>
+          <fpage>4417</fpage>
+          <lpage>4428</lpage>
+          <pub-id pub-id-type="doi">10.1007/s11042-019-7395-9</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B34-bioengineering-11-00240">
+        <label>34.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Bello</surname>
+              <given-names>I.</given-names>
+            </name>
+            <name>
+              <surname>Zoph</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Le</surname>
+              <given-names>Q.</given-names>
+            </name>
+            <name>
+              <surname>Vaswani</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Shlens</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <article-title>Attention Augmented Convolutional Networks</article-title>
+          <source>Proceedings of the 2019 IEEE/CVF International Conference on Computer Vision (ICCV)</source>
+          <conf-loc>Seoul, Republic of Korea</conf-loc>
+          <conf-date>27 October&#x2013;2 November 2019</conf-date>
+          <fpage>3285</fpage>
+          <lpage>3294</lpage>
+          <pub-id pub-id-type="doi">10.1109/ICCV.2019.00338</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B35-bioengineering-11-00240">
+        <label>35.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Dechen</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Hualing</surname>
+              <given-names>L.</given-names>
+            </name>
+          </person-group>
+          <article-title>A Graph-based Edge Attention Gate Medical Image Segmentation Method</article-title>
+          <source>IET Image Process.</source>
+          <year>2023</year>
+          <volume>17</volume>
+          <fpage>2142</fpage>
+          <lpage>2157</lpage>
+        </element-citation>
+      </ref>
+      <ref id="B36-bioengineering-11-00240">
+        <label>36.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Shen</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Li</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Member</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Zhu</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Yu</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Peng</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Zhou</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Guan</surname>
+              <given-names>L.</given-names>
+            </name>
+            <name>
+              <surname>Chen</surname>
+              <given-names>X.</given-names>
+            </name>
+            <etal/>
+          </person-group>
+          <article-title>Graph Attention U-Net for Retinal Layer Surface Detection and Choroid Neovascularization Segmentation in OCT Images</article-title>
+          <source>IEEE Trans. Med. Imaging</source>
+          <year>2023</year>
+          <volume>42</volume>
+          <fpage>3140</fpage>
+          <lpage>3154</lpage>
+          <pub-id pub-id-type="doi">10.1109/TMI.2023.3240757</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B37-bioengineering-11-00240">
+        <label>37.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Melin&#x161;&#x10D;ak</surname>
+              <given-names>M.</given-names>
+            </name>
+          </person-group>
+          <article-title>Attention-Based U-Net: Joint Segmentation of Layers and Fluids from Retinal OCT Images</article-title>
+          <source>Proceedings of the 2023 46th MIPRO ICT and Electronics Convention (MIPRO)</source>
+          <conf-loc>Opatija, Croatia</conf-loc>
+          <conf-date>22&#x2013;26 May 2023</conf-date>
+          <fpage>391</fpage>
+          <lpage>396</lpage>
+          <pub-id pub-id-type="doi">10.23919/MIPRO57284.2023.10159914</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B38-bioengineering-11-00240">
+        <label>38.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Pappu</surname>
+              <given-names>G.P.</given-names>
+            </name>
+          </person-group>
+          <article-title>EANet: Multiscale Autoencoder Based Edge Attention Network for Fluid Segmentation from SD-OCT Images</article-title>
+          <source>Int. J. Imaging Syst. Technol.</source>
+          <year>2023</year>
+          <volume>33</volume>
+          <fpage>909</fpage>
+          <lpage>927</lpage>
+          <pub-id pub-id-type="doi">10.1002/ima.22840</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B39-bioengineering-11-00240">
+        <label>39.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Melin&#x161;&#x10D;ak</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Radmilov</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Vatavuk</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Lon&#x10D;ari&#x107;</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>AROI: Annotated Retinal OCT Images Database</article-title>
+          <source>Proceedings of the 2021 44th International Convention on Information, Communication and Electronic Technology (MIPRO)</source>
+          <conf-loc>Opatija, Croatia</conf-loc>
+          <conf-date>27 September&#x2013;1 October 2021</conf-date>
+          <fpage>371</fpage>
+          <lpage>376</lpage>
+          <pub-id pub-id-type="doi">10.23919/MIPRO52101.2021.9596934</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B40-bioengineering-11-00240">
+        <label>40.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Buslaev</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Iglovikov</surname>
+              <given-names>V.I.</given-names>
+            </name>
+            <name>
+              <surname>Khvedchenya</surname>
+              <given-names>E.</given-names>
+            </name>
+            <name>
+              <surname>Parinov</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Druzhinin</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Kalinin</surname>
+              <given-names>A.A.</given-names>
+            </name>
+          </person-group>
+          <article-title>Albumentations: Fast and Flexible Image Augmentations</article-title>
+          <source>Information</source>
+          <year>2020</year>
+          <volume>11</volume>
+          <elocation-id>125</elocation-id>
+          <pub-id pub-id-type="doi">10.3390/info11020125</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B41-bioengineering-11-00240">
+        <label>41.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Haghighi</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Jasemi</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Hessabi</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Zolanvari</surname>
+              <given-names>A.</given-names>
+            </name>
+          </person-group>
+          <article-title>PyCM: Multiclass Confusion Matrix Library in Python</article-title>
+          <source>J. Open Source Softw.</source>
+          <year>2018</year>
+          <volume>3</volume>
+          <fpage>729</fpage>
+          <pub-id pub-id-type="doi">10.21105/joss.00729</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B42-bioengineering-11-00240">
+        <label>42.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Tang</surname>
+              <given-names>F.</given-names>
+            </name>
+            <name>
+              <surname>Huang</surname>
+              <given-names>Q.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Hou</surname>
+              <given-names>X.</given-names>
+            </name>
+            <name>
+              <surname>Su</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <article-title>DuAT: Dual-Aggregation Transformer Network for Medical Image Segmentation</article-title>
+          <source>arXiv</source>
+          <year>2022</year>
+          <pub-id pub-id-type="arxiv">2212.11677</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B43-bioengineering-11-00240">
+        <label>43.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Qin</surname>
+              <given-names>X.</given-names>
+            </name>
+            <name>
+              <surname>Fan</surname>
+              <given-names>D.-P.</given-names>
+            </name>
+            <name>
+              <surname>Huang</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Diagne</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Zhang</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Sant&#x2019;Anna</surname>
+              <given-names>A.C.</given-names>
+            </name>
+            <name>
+              <surname>Su&#xE0;rez</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Jagersand</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Shao</surname>
+              <given-names>L.</given-names>
+            </name>
+          </person-group>
+          <article-title>Boundary-Aware Segmentation Network for Mobile and Web Applications</article-title>
+          <source>arXiv</source>
+          <year>2021</year>
+          <pub-id pub-id-type="arxiv">2101.04704</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B44-bioengineering-11-00240">
+        <label>44.</label>
+        <element-citation publication-type="book">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Chen</surname>
+              <given-names>L.C.</given-names>
+            </name>
+            <name>
+              <surname>Zhu</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Papandreou</surname>
+              <given-names>G.</given-names>
+            </name>
+            <name>
+              <surname>Schroff</surname>
+              <given-names>F.</given-names>
+            </name>
+            <name>
+              <surname>Adam</surname>
+              <given-names>H.</given-names>
+            </name>
+          </person-group>
+          <source>Encoder-Decoder with Atrous Separable Convolution for Semantic</source>
+          <publisher-name>Springer International Publishing</publisher-name>
+          <publisher-loc>Cham, Switzerland</publisher-loc>
+          <year>2018</year>
+          <isbn>978-3-030-01266-3</isbn>
+        </element-citation>
+      </ref>
+      <ref id="B45-bioengineering-11-00240">
+        <label>45.</label>
+        <element-citation publication-type="journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Yang</surname>
+              <given-names>C.E.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Wu</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Jin</surname>
+              <given-names>K.A.I.</given-names>
+            </name>
+            <name>
+              <surname>Yan</surname>
+              <given-names>Y.A.N.</given-names>
+            </name>
+            <name>
+              <surname>Ye</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Wang</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>Multi-Task Dual Boundary Aware Network for Retinal Layer Segmentation</article-title>
+          <source>IEEE Access</source>
+          <year>2023</year>
+          <volume>11</volume>
+          <fpage>125346</fpage>
+          <lpage>125358</lpage>
+          <pub-id pub-id-type="doi">10.1109/ACCESS.2023.3330493</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="B46-bioengineering-11-00240">
+        <label>46.</label>
+        <element-citation publication-type="confproc">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Liu</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Lin</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Cao</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Hu</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Wei</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Zhang</surname>
+              <given-names>Z.</given-names>
+            </name>
+            <name>
+              <surname>Lin</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Guo</surname>
+              <given-names>B.</given-names>
+            </name>
+          </person-group>
+          <article-title>Swin Transformer: Hierarchical Vision Transformer Using Shifted Windows</article-title>
+          <source>Proceedings of the 2021 IEEE/CVF International Conference on Computer Vision (ICCV)</source>
+          <conf-loc>Montreal, QC, Canada</conf-loc>
+          <conf-date>10&#x2013;17 October 2021</conf-date>
+          <publisher-name>IEEE</publisher-name>
+          <publisher-loc>Piscataway, NJ, USA</publisher-loc>
+          <year>2021</year>
+          <fpage>9992</fpage>
+          <lpage>10002</lpage>
+        </element-citation>
+      </ref>
+    </ref-list>
+    <sec sec-type="display-objects">
+      <title>Figures and Tables</title>
+      <fig id="bioengineering-11-00240-f001" position="float">
+        <label>Figure 1</label>
+        <caption>
+          <p>Deep insight into the structure of the healthy Retina (Eye, fundus, OCT (<bold>Left</bold> to <bold>Right</bold>)), the Blue line represents a cross-section of the fundus.</p>
+        </caption>
+        <graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bioengineering-11-00240-g001.tif"/>
+      </fig>
+      <fig id="bioengineering-11-00240-f002" position="float">
+        <label>Figure 2</label>
+        <caption>
+          <p>OCT image after various image augmentations.</p>
+        </caption>
+        <graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bioengineering-11-00240-g002.tif"/>
+      </fig>
+      <fig id="bioengineering-11-00240-f003" position="float">
+        <label>Figure 3</label>
+        <caption>
+          <p>Proposed hybrid attention-based U-Net model.</p>
+        </caption>
+        <graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bioengineering-11-00240-g003.tif"/>
+      </fig>
+      <fig id="bioengineering-11-00240-f004" position="float">
+        <label>Figure 4</label>
+        <caption>
+          <p>Position-wise subtraction of max-pooled pixels from a feature matrix to obtain residual features.</p>
+        </caption>
+        <graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bioengineering-11-00240-g004.tif"/>
+      </fig>
+      <fig id="bioengineering-11-00240-f005" position="float">
+        <label>Figure 5</label>
+        <caption>
+          <p>Proposed edge attention block.</p>
+        </caption>
+        <graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bioengineering-11-00240-g005.tif"/>
+      </fig>
+      <fig id="bioengineering-11-00240-f006" position="float">
+        <label>Figure 6</label>
+        <caption>
+          <p>Proposed spatial attention block.</p>
+        </caption>
+        <graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bioengineering-11-00240-g006.tif"/>
+      </fig>
+      <fig id="bioengineering-11-00240-f007" position="float">
+        <label>Figure 7</label>
+        <caption>
+          <p>Different configurations of the model to determine efficient placement of edge and spatial attention blocks. Structure A used attention blocks only in the encoder, while Structure B used them only in the decoder. Structures C and D had different types of attention blocks in all the skip-connections.</p>
+        </caption>
+        <graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bioengineering-11-00240-g007.tif"/>
+      </fig>
+      <fig id="bioengineering-11-00240-f008" position="float">
+        <label>Figure 8</label>
+        <caption>
+          <p>Results of the proposed model showing the best and worst cases of raw and augmented images.</p>
+        </caption>
+        <graphic xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bioengineering-11-00240-g008.tif"/>
+      </fig>
+      <table-wrap id="bioengineering-11-00240-t001" position="float">
+        <object-id pub-id-type="pii">bioengineering-11-00240-t001_Table 1</object-id>
+        <label>Table 1</label>
+        <caption>
+          <p>Ablation study results for various structure configurations in the U-net model.</p>
+        </caption>
+        <table>
+          <thead>
+            <tr>
+              <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin"> </th>
+              <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Structure A</th>
+              <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Structure B</th>
+              <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Structure C</th>
+              <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Structure D</th>
+              <th align="left" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Proposed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" valign="middle">Mean DC</td>
+              <td align="left" valign="middle">88.80</td>
+              <td align="left" valign="middle">87.70</td>
+              <td align="left" valign="middle">89.1</td>
+              <td align="left" valign="middle">88.40</td>
+              <td align="left" valign="middle">94.99</td>
+            </tr>
+            <tr>
+              <td align="left" valign="middle">Mean BIoU</td>
+              <td align="left" valign="middle">77.80</td>
+              <td align="left" valign="middle">76.67</td>
+              <td align="left" valign="middle">79.90</td>
+              <td align="left" valign="middle">78.62</td>
+              <td align="left" valign="middle">91.80</td>
+            </tr>
+            <tr>
+              <td align="left" valign="middle" style="border-bottom:solid thin">Training Time</td>
+              <td align="left" valign="middle" style="border-bottom:solid thin">48.81 min</td>
+              <td align="left" valign="middle" style="border-bottom:solid thin">58.61 min</td>
+              <td align="left" valign="middle" style="border-bottom:solid thin">74.36 min</td>
+              <td align="left" valign="middle" style="border-bottom:solid thin">71.77 min</td>
+              <td align="left" valign="middle" style="border-bottom:solid thin">44.31 min</td>
+            </tr>
+          </tbody>
+        </table>
+      </table-wrap>
+      <table-wrap id="bioengineering-11-00240-t002" position="float">
+        <object-id pub-id-type="pii">bioengineering-11-00240-t002_Table 2</object-id>
+        <label>Table 2</label>
+        <caption>
+          <p>Overview of the proposed model performance (DC) compared with other models.</p>
+        </caption>
+        <table>
+          <thead>
+            <tr>
+              <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Models</th>
+              <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Above ILM</th>
+              <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">ILM-IPL/INL</th>
+              <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">IPL/INL-RPE</th>
+              <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">RPE-BM</th>
+              <th align="center" valign="middle" style="border-top:solid thin;border-bottom:solid thin">Under BM</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="center" valign="middle">Interobserver [<xref ref-type="bibr" rid="B37-bioengineering-11-00240">37</xref>]</td>
+              <td align="center" valign="middle">98.20 </td>
+              <td align="center" valign="middle">95.20 </td>
+              <td align="center" valign="middle">94.80 </td>
+              <td align="center" valign="middle">69.90 </td>
+              <td align="center" valign="middle">98.90 </td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">Intraobserver [<xref ref-type="bibr" rid="B37-bioengineering-11-00240">37</xref>]</td>
+              <td align="center" valign="middle">99.80 </td>
+              <td align="center" valign="middle">97.30 </td>
+              <td align="center" valign="middle">97.00 </td>
+              <td align="center" valign="middle">77.80 </td>
+              <td align="center" valign="middle">99.80 </td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">Standard U-net [<xref ref-type="bibr" rid="B37-bioengineering-11-00240">37</xref>]</td>
+              <td align="center" valign="middle">99.50 </td>
+              <td align="center" valign="middle">95.00 </td>
+              <td align="center" valign="middle">92.30 </td>
+              <td align="center" valign="middle">66.90</td>
+              <td align="center" valign="middle">98.80 </td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">U-net-like [<xref ref-type="bibr" rid="B37-bioengineering-11-00240">37</xref>]</td>
+              <td align="center" valign="middle">99.50 </td>
+              <td align="center" valign="middle">89.90 </td>
+              <td align="center" valign="middle">89.00 </td>
+              <td align="center" valign="middle">47.60 </td>
+              <td align="center" valign="middle">98.80 </td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">U-net++ [<xref ref-type="bibr" rid="B37-bioengineering-11-00240">37</xref>]</td>
+              <td align="center" valign="middle">99.20 </td>
+              <td align="center" valign="middle">94.40 </td>
+              <td align="center" valign="middle">92.40 </td>
+              <td align="center" valign="middle">64.10 </td>
+              <td align="center" valign="middle">98.60</td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">DuAT [<xref ref-type="bibr" rid="B42-bioengineering-11-00240">42</xref>]</td>
+              <td align="center" valign="middle">89.21</td>
+              <td align="center" valign="middle">91.84</td>
+              <td align="center" valign="middle">89.40</td>
+              <td align="center" valign="middle">91.80</td>
+              <td align="center" valign="middle">85.27</td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">RelayNet [<xref ref-type="bibr" rid="B22-bioengineering-11-00240">22</xref>]</td>
+              <td align="center" valign="middle">82.04</td>
+              <td align="center" valign="middle">78.79</td>
+              <td align="center" valign="middle">76.27</td>
+              <td align="center" valign="middle">77.80</td>
+              <td align="center" valign="middle">74.51</td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">BASNet [<xref ref-type="bibr" rid="B43-bioengineering-11-00240">43</xref>]</td>
+              <td align="center" valign="middle">86.13</td>
+              <td align="center" valign="middle">77.76</td>
+              <td align="center" valign="middle">64.90</td>
+              <td align="center" valign="middle">76.65</td>
+              <td align="center" valign="middle">68.79</td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">Deeplab V3+ [<xref ref-type="bibr" rid="B44-bioengineering-11-00240">44</xref>]</td>
+              <td align="center" valign="middle">89.21</td>
+              <td align="center" valign="middle">88.93</td>
+              <td align="center" valign="middle">86.42</td>
+              <td align="center" valign="middle">89.42</td>
+              <td align="center" valign="middle">85.76</td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">DBANet [<xref ref-type="bibr" rid="B45-bioengineering-11-00240">45</xref>]</td>
+              <td align="center" valign="middle">91.19</td>
+              <td align="center" valign="middle">90.21</td>
+              <td align="center" valign="middle">88.25</td>
+              <td align="center" valign="middle">91.47</td>
+              <td align="center" valign="middle">87.35</td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle">Swin-Unet [<xref ref-type="bibr" rid="B46-bioengineering-11-00240">46</xref>]</td>
+              <td align="center" valign="middle">88.45</td>
+              <td align="center" valign="middle">87.87</td>
+              <td align="center" valign="middle">84.23</td>
+              <td align="center" valign="middle">87.45</td>
+              <td align="center" valign="middle">79.38</td>
+            </tr>
+            <tr>
+              <td align="center" valign="middle" style="border-bottom:solid thin">
+                <bold>Proposed model</bold>
+              </td>
+              <td align="center" valign="middle" style="border-bottom:solid thin">
+                <bold>99.80</bold>
+              </td>
+              <td align="center" valign="middle" style="border-bottom:solid thin">
+                <bold>97.78</bold>
+              </td>
+              <td align="center" valign="middle" style="border-bottom:solid thin">
+                <bold>98.70</bold>
+              </td>
+              <td align="center" valign="middle" style="border-bottom:solid thin">
+                <bold>78.90</bold>
+              </td>
+              <td align="center" valign="middle" style="border-bottom:solid thin">
+                <bold>99.80</bold>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </table-wrap>
+    </sec>
+    <fn-group>
+      <fn>
+        <p><bold>Disclaimer/Publisher&#x2019;s Note:</bold> The statements, opinions and data contained in all publications are solely those of the individual author(s) and contributor(s) and not of MDPI and/or the editor(s). MDPI and/or the editor(s) disclaim responsibility for any injury to people or property resulting from any ideas, methods, instructions or products referred to in the content.</p>
+      </fn>
+    </fn-group>
+  </back>
+</article>
