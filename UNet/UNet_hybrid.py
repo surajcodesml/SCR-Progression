@@ -318,6 +318,84 @@ def create_augmentation_pipeline():
     ])
 
 
+def create_segmentation_mask(annotations, target_height, target_width, height_scale, width_scale, sample_idx):
+    """
+    Create segmentation mask with regions between layer boundaries.
+    
+    Args:
+        annotations: Dictionary of layer annotations
+        target_height: Target image height
+        target_width: Target image width
+        height_scale: Height scaling factor
+        width_scale: Width scaling factor
+        sample_idx: Sample index
+        
+    Returns:
+        Segmentation mask with 4 classes (background + 3 regions)
+    """
+    mask = np.zeros((target_height, target_width), dtype=np.uint8)
+    
+    # Get scaled layer coordinates
+    layer_coords = {}
+    for layer_name in ['ILM', 'PR1', 'BM']:
+        if layer_name in annotations:
+            coords = annotations[layer_name][sample_idx]
+            scaled_coords = []
+            
+            for x in range(len(coords)):
+                y_coord_raw = coords[x]
+                if not np.isnan(y_coord_raw):
+                    y_coord = int(y_coord_raw * height_scale)
+                    x_coord = int(x * width_scale)
+                    if 0 <= y_coord < target_height and 0 <= x_coord < target_width:
+                        scaled_coords.append((x_coord, y_coord))
+                else:
+                    scaled_coords.append(None)
+            
+            layer_coords[layer_name] = scaled_coords
+    
+    # Create regions between layers
+    for x in range(target_width):
+        ilm_y = None
+        pr1_y = None
+        bm_y = None
+        
+        # Get y-coordinates for this x position
+        if 'ILM' in layer_coords and x < len(layer_coords['ILM']) and layer_coords['ILM'][x] is not None:
+            ilm_y = layer_coords['ILM'][x][1]
+        if 'PR1' in layer_coords and x < len(layer_coords['PR1']) and layer_coords['PR1'][x] is not None:
+            pr1_y = layer_coords['PR1'][x][1]
+        if 'BM' in layer_coords and x < len(layer_coords['BM']) and layer_coords['BM'][x] is not None:
+            bm_y = layer_coords['BM'][x][1]
+        
+        # Fill regions between layers
+        # Region 1: ILM to PR1
+        if ilm_y is not None and pr1_y is not None:
+            y_start = min(ilm_y, pr1_y)
+            y_end = max(ilm_y, pr1_y)
+            for y in range(y_start, min(y_end + 1, target_height)):
+                if 0 <= y < target_height:
+                    mask[y, x] = 1
+        
+        # Region 2: PR1 to BM
+        if pr1_y is not None and bm_y is not None:
+            y_start = min(pr1_y, bm_y)
+            y_end = max(pr1_y, bm_y)
+            for y in range(y_start, min(y_end + 1, target_height)):
+                if 0 <= y < target_height:
+                    mask[y, x] = 2
+        
+        # Region 3: BM to background (50 pixels below BM)
+        if bm_y is not None:
+            y_start = bm_y
+            y_end = min(bm_y + 50, target_height)
+            for y in range(y_start, y_end):
+                if 0 <= y < target_height:
+                    mask[y, x] = 3
+    
+    return mask
+
+
 def preprocess_data(images, annotations, target_size=(512, 256)):
     """
     Preprocess images and annotations.
@@ -368,34 +446,20 @@ def preprocess_data(images, annotations, target_size=(512, 256)):
         img_grayscale = img_grayscale.astype(np.float32) / 255.0
         preprocessed_images[i, :, :, 0] = img_grayscale
         
-        # Create combined mask for three layers
-        mask = np.zeros((target_height, target_width))
-        
-        # Process each layer annotation
-        layer_labels = {'ILM': 1, 'PR1': 2, 'BM': 3}
-        
-        for layer_name, label in layer_labels.items():
-            if layer_name in annotations:
-                layer_coords = annotations[layer_name][i]
-                
-                # Scale and create mask
-                for x in range(len(layer_coords)):
-                    y_coord_raw = layer_coords[x]
-                    
-                    # Skip NaN values
-                    if np.isnan(y_coord_raw):
-                        continue
-                        
-                    y_coord = int(y_coord_raw * height_scale)
-                    x_coord = int(x * width_scale)
-                    
-                    if 0 <= y_coord < target_height and 0 <= x_coord < target_width:
-                        mask[y_coord, x_coord] = label
-        
+        # Create segmentation mask with regions
+        mask = create_segmentation_mask(annotations, target_height, target_width, height_scale, width_scale, i)
         preprocessed_masks[i] = mask
     
     print(f"Preprocessed images shape: {preprocessed_images.shape}")
     print(f"Preprocessed masks shape: {preprocessed_masks.shape}")
+    
+    # Print mask statistics
+    unique_values = np.unique(preprocessed_masks)
+    print(f"Mask unique values: {unique_values}")
+    for val in unique_values:
+        count = np.sum(preprocessed_masks == val)
+        percentage = (count / preprocessed_masks.size) * 100
+        print(f"  Class {val}: {count:,} pixels ({percentage:.2f}%)")
     
     return preprocessed_images, preprocessed_masks
 
@@ -413,11 +477,11 @@ def test_preprocessing_visualization(images, annotations, preprocessed_images, p
     """
     print("Creating preprocessing test visualization...")
     
-    fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+    fig, axes = plt.subplots(1, 3, figsize=(20, 6))
     
     # Original image with annotations
     axes[0].imshow(images[0], cmap='gray')
-    axes[0].set_title('Original Image with Annotations')
+    axes[0].set_title('Original Image with Layer Annotations')
     
     # Plot original annotations
     colors = ['red', 'blue', 'green']
@@ -440,17 +504,205 @@ def test_preprocessing_visualization(images, annotations, preprocessed_images, p
     axes[0].set_xlabel('X coordinate')
     axes[0].set_ylabel('Y coordinate')
     
-    # Preprocessed image with mask overlay
+    # Preprocessed image
     axes[1].imshow(preprocessed_images[0, :, :, 0], cmap='gray')
-    axes[1].imshow(preprocessed_masks[0], alpha=0.3, cmap='jet')
-    axes[1].set_title('Preprocessed Image with Mask Overlay')
+    axes[1].set_title('Preprocessed Image')
     axes[1].set_xlabel('X coordinate')
     axes[1].set_ylabel('Y coordinate')
+    
+    # Segmentation mask with regions
+    mask_colored = np.zeros((preprocessed_masks[0].shape[0], preprocessed_masks[0].shape[1], 3))
+    # Background: black (0, 0, 0)
+    # Region 1 (ILM-PR1): red (1, 0, 0)
+    # Region 2 (PR1-BM): green (0, 1, 0)
+    # Region 3 (BM-background): blue (0, 0, 1)
+    
+    mask_colored[preprocessed_masks[0] == 1] = [1, 0, 0]  # Red
+    mask_colored[preprocessed_masks[0] == 2] = [0, 1, 0]  # Green
+    mask_colored[preprocessed_masks[0] == 3] = [0, 0, 1]  # Blue
+    
+    axes[2].imshow(preprocessed_images[0, :, :, 0], cmap='gray', alpha=0.7)
+    axes[2].imshow(mask_colored, alpha=0.6)
+    axes[2].set_title('Segmentation Regions\n(Red: ILM-PR1, Green: PR1-BM, Blue: BM-Background)')
+    axes[2].set_xlabel('X coordinate')
+    axes[2].set_ylabel('Y coordinate')
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.show()
     print(f"Preprocessing test visualization saved as {save_path}")
+
+
+def extract_layer_boundaries_from_mask(mask):
+    """
+    Extract layer boundary coordinates from segmentation mask.
+    
+    Args:
+        mask: Segmentation mask (H, W) with region labels
+        
+    Returns:
+        Dictionary with layer boundary coordinates
+    """
+    height, width = mask.shape
+    boundaries = {'ILM': [], 'PR1': [], 'BM': []}
+    
+    for x in range(width):
+        column = mask[:, x]
+        
+        # Find ILM (top boundary of region 1)
+        ilm_y = None
+        region1_indices = np.where(column == 1)[0]
+        if len(region1_indices) > 0:
+            ilm_y = region1_indices[0]
+        boundaries['ILM'].append(ilm_y if ilm_y is not None else np.nan)
+        
+        # Find PR1 (boundary between region 1 and 2)
+        pr1_y = None
+        region1_indices = np.where(column == 1)[0]
+        region2_indices = np.where(column == 2)[0]
+        
+        if len(region1_indices) > 0 and len(region2_indices) > 0:
+            # PR1 is at the transition point
+            pr1_y = region1_indices[-1]  # Last pixel of region 1
+        elif len(region2_indices) > 0:
+            # Only region 2 exists, PR1 is at the top of region 2
+            pr1_y = region2_indices[0]
+        boundaries['PR1'].append(pr1_y if pr1_y is not None else np.nan)
+        
+        # Find BM (boundary between region 2 and 3)
+        bm_y = None
+        region2_indices = np.where(column == 2)[0]
+        region3_indices = np.where(column == 3)[0]
+        
+        if len(region2_indices) > 0 and len(region3_indices) > 0:
+            # BM is at the transition point
+            bm_y = region2_indices[-1]  # Last pixel of region 2
+        elif len(region3_indices) > 0:
+            # Only region 3 exists, BM is at the top of region 3
+            bm_y = region3_indices[0]
+        boundaries['BM'].append(bm_y if bm_y is not None else np.nan)
+    
+    return boundaries
+
+
+def visualize_predictions_vs_groundtruth(model, val_loader, device, save_path="predictions_vs_gt.png", num_samples=3):
+    """
+    Visualize model predictions vs ground truth annotations.
+    
+    Args:
+        model: Trained model
+        val_loader: Validation data loader
+        device: Device (cuda/cpu)
+        save_path: Path to save visualization
+        num_samples: Number of samples to visualize
+    """
+    print("Generating prediction vs ground truth visualization...")
+    
+    model.eval()
+    samples_visualized = 0
+    
+    fig, axes = plt.subplots(num_samples, 3, figsize=(18, 6 * num_samples))
+    if num_samples == 1:
+        axes = axes.reshape(1, -1)
+    
+    with torch.no_grad():
+        for batch_idx, (data, target) in enumerate(val_loader):
+            if samples_visualized >= num_samples:
+                break
+                
+            data = data.to(device)
+            output = model(data)
+            
+            # Get predictions
+            pred_probs = torch.softmax(output, dim=1)
+            pred_mask = torch.argmax(pred_probs, dim=1)
+            
+            for i in range(min(data.shape[0], num_samples - samples_visualized)):
+                # Convert to numpy
+                image = data[i, 0].cpu().numpy()
+                gt_mask = target[i].numpy()
+                predicted_mask = pred_mask[i].cpu().numpy()
+                
+                # Extract boundaries from masks
+                gt_boundaries = extract_layer_boundaries_from_mask(gt_mask)
+                pred_boundaries = extract_layer_boundaries_from_mask(predicted_mask)
+                
+                # Plot 1: Original image with ground truth annotations
+                axes[samples_visualized, 0].imshow(image, cmap='gray')
+                axes[samples_visualized, 0].set_title(f'Sample {samples_visualized + 1}: Ground Truth Annotations')
+                
+                colors = ['red', 'blue', 'green']
+                layer_names = ['ILM', 'PR1', 'BM']
+                
+                for layer_name, color in zip(layer_names, colors):
+                    y_coords = np.array(gt_boundaries[layer_name])
+                    x_coords = np.arange(len(y_coords))
+                    
+                    # Filter out NaN values
+                    valid_mask = ~np.isnan(y_coords)
+                    if np.any(valid_mask):
+                        axes[samples_visualized, 0].plot(x_coords[valid_mask], y_coords[valid_mask], 
+                                                        color=color, label=f'GT {layer_name}', linewidth=2)
+                
+                axes[samples_visualized, 0].legend()
+                axes[samples_visualized, 0].set_xlabel('X coordinate')
+                axes[samples_visualized, 0].set_ylabel('Y coordinate')
+                
+                # Plot 2: Original image with predicted annotations
+                axes[samples_visualized, 1].imshow(image, cmap='gray')
+                axes[samples_visualized, 1].set_title(f'Sample {samples_visualized + 1}: Predicted Annotations')
+                
+                for layer_name, color in zip(layer_names, colors):
+                    y_coords = np.array(pred_boundaries[layer_name])
+                    x_coords = np.arange(len(y_coords))
+                    
+                    # Filter out NaN values
+                    valid_mask = ~np.isnan(y_coords)
+                    if np.any(valid_mask):
+                        axes[samples_visualized, 1].plot(x_coords[valid_mask], y_coords[valid_mask], 
+                                                        color=color, label=f'Pred {layer_name}', linewidth=2, linestyle='--')
+                
+                axes[samples_visualized, 1].legend()
+                axes[samples_visualized, 1].set_xlabel('X coordinate')
+                axes[samples_visualized, 1].set_ylabel('Y coordinate')
+                
+                # Plot 3: Combined comparison
+                axes[samples_visualized, 2].imshow(image, cmap='gray')
+                axes[samples_visualized, 2].set_title(f'Sample {samples_visualized + 1}: GT vs Predicted Overlay')
+                
+                for layer_name, color in zip(layer_names, colors):
+                    # Ground truth
+                    gt_y_coords = np.array(gt_boundaries[layer_name])
+                    gt_x_coords = np.arange(len(gt_y_coords))
+                    gt_valid_mask = ~np.isnan(gt_y_coords)
+                    
+                    if np.any(gt_valid_mask):
+                        axes[samples_visualized, 2].plot(gt_x_coords[gt_valid_mask], gt_y_coords[gt_valid_mask], 
+                                                        color=color, label=f'GT {layer_name}', linewidth=3, alpha=0.8)
+                    
+                    # Predictions
+                    pred_y_coords = np.array(pred_boundaries[layer_name])
+                    pred_x_coords = np.arange(len(pred_y_coords))
+                    pred_valid_mask = ~np.isnan(pred_y_coords)
+                    
+                    if np.any(pred_valid_mask):
+                        axes[samples_visualized, 2].plot(pred_x_coords[pred_valid_mask], pred_y_coords[pred_valid_mask], 
+                                                        color=color, label=f'Pred {layer_name}', linewidth=2, 
+                                                        linestyle='--', alpha=0.8)
+                
+                axes[samples_visualized, 2].legend()
+                axes[samples_visualized, 2].set_xlabel('X coordinate')
+                axes[samples_visualized, 2].set_ylabel('Y coordinate')
+                
+                samples_visualized += 1
+                
+                if samples_visualized >= num_samples:
+                    break
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.show()
+    print(f"Prediction vs ground truth visualization saved as {save_path}")
 
 
 def calculate_metrics(y_true, y_pred):
@@ -644,13 +896,10 @@ def train_model(model, train_loader, val_loader, epochs=300, learning_rate=0.001
         # Learning rate scheduling
         scheduler.step(avg_val_loss)
         
-        # Print progress every 10 epochs
-        if (epoch + 1) % 10 == 0:
-            print(f'Epoch [{epoch+1}/{epochs}]')
-            print(f'  Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}')
-            print(f'  Train Dice: {avg_train_dice:.4f}, Val Dice: {avg_val_dice:.4f}')
-            print(f'  Train IoU: {avg_train_iou:.4f}, Val IoU: {avg_val_iou:.4f}')
-        
+
+        print(f'Epoch [{epoch+1}/{epochs}]')
+        print(f'  Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}, Train Dice: {avg_train_dice:.4f}, Val Dice: {avg_val_dice:.4f}, Train IoU: {avg_train_iou:.4f}, Val IoU: {avg_val_iou:.4f}')
+    
         # Early stopping
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
@@ -671,8 +920,8 @@ def main():
     """
     Main function to execute the complete pipeline.
     """
-    print("=== Hybrid U-Net for OCT Image Segmentation ===")
-    
+    print("Hybrid U-Net for OCT Image Segmentation")
+
     # Check for GPU availability
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Device: {device}")
@@ -742,7 +991,7 @@ def main():
             model,
             train_loader,
             val_loader,
-            epochs=30,
+            epochs=10,
             learning_rate=0.001,
             device=device
         )
@@ -800,6 +1049,10 @@ def main():
         print(f"\nAdditional Metrics:")
         for metric_name, metric_value in metrics.items():
             print(f"{metric_name.capitalize()}: {metric_value:.4f}")
+        
+        # Step 10: Generate prediction vs ground truth visualization
+        print("\nGenerating prediction vs ground truth visualization...")
+        visualize_predictions_vs_groundtruth(model, val_loader, device, "predictions_vs_gt.png", num_samples=3)
         
     except Exception as e:
         print(f"Error during training: {e}")
