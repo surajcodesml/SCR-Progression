@@ -465,8 +465,8 @@ def plot_segmentation_results(model, images, masks, num_samples=3, save_dir="seg
 if __name__ == "__main__":
     # Configuration
     use_nemours_data = True
-    use_duke_data = True
-    max_samples_per_dataset = 700  # Set to number to limit samples, None for all
+    use_duke_data = False
+    max_samples_per_dataset = None  # Set to number to limit samples, None for all
 
     # Load datasets
     datasets = []
@@ -550,7 +550,7 @@ if __name__ == "__main__":
     val_recall_scores = []
     val_f1_scores = []
 
-    n_epochs = 20
+    n_epochs = 50
     print(f"\nStarting segmentation training for {n_epochs} epochs...")
     print("Epoch | Train Loss | Val Loss  | Dice    | IoU     | Precision | Recall  | F1      ")
     print("-" * 80)
