@@ -196,7 +196,109 @@ def load_nemours_data_with_masks(hdf5_path, target_size=(224, 224)):
     return images, masks
 
 
+def load_duke_data_with_masks(hdf5_path, target_size=(224, 224)):
+    """
+    Load data from Duke dataset HDF5 file and generate segmentation masks.
+    
+    Args:
+        hdf5_path (str): Path to the HDF5 file
+        target_size (tuple): Target size for images and masks (height, width)
+    
+    Returns:
+        tuple: (images, masks) where images have shape (N, H, W, 1) 
+               and masks have shape (N, H, W) with classes 0,1,2
+    """
+    with h5py.File(hdf5_path, 'r') as f:
+        # Load images and layer maps
+        images_orig = f['images'][:]  # (N, 224, 224) - already at target size
+        layer_maps = f['layer_maps'][:]  # (N, 224, 3)
+        layer_names = [name.decode() for name in f['layer_names'][:]]
+    
+    print(f"Duke original image shape: {images_orig.shape}")
+    print(f"Duke layer names: {layer_names}")
+    
+    # Find indices for ILM, PR1, and BM
+    ilm_idx = layer_names.index('ILM') if 'ILM' in layer_names else 0
+    pr1_idx = next((i for i, name in enumerate(layer_names) if 'PR1' in name), 1)
+    bm_idx = next((i for i, name in enumerate(layer_names) if 'Bruch' in name or 'BM' in name), 2)
+    
+    print(f"Duke layer indices - ILM: {ilm_idx}, PR1: {pr1_idx}, BM: {bm_idx}")
+    
+    # Extract the three layers we need
+    layer_data = {
+        'ILM': layer_maps[:, :, ilm_idx],
+        'PR1': layer_maps[:, :, pr1_idx], 
+        'BM': layer_maps[:, :, bm_idx]
+    }
+    
+    # Normalize images to [0, 1] if needed
+    if images_orig.max() > 1.0:
+        images_orig = images_orig.astype(np.float32) / 255.0
+    
+    # Generate masks at original resolution
+    print("Generating masks for Duke dataset...")
+    masks_orig = generate_annotation_masks(images_orig, layer_data)
+    print(f"Generated Duke masks shape: {masks_orig.shape}")
+    print(f"Duke mask classes: {np.unique(masks_orig)}")
+    
+    # Resize if target size is different from original
+    if images_orig.shape[1:] != target_size:
+        resized_images = []
+        resized_masks = []
+        
+        for i in range(images_orig.shape[0]):
+            # Resize image
+            img = images_orig[i]
+            resized_img = resize(img, target_size, preserve_range=True, anti_aliasing=True)
+            resized_images.append(resized_img)
+            
+            # Resize mask using nearest neighbor to preserve class labels
+            mask = masks_orig[i]
+            resized_mask = resize(mask, target_size, preserve_range=True, 
+                                anti_aliasing=False, order=0)  # order=0 for nearest neighbor
+            resized_mask = resized_mask.astype(np.uint8)
+            resized_masks.append(resized_mask)
+        
+        images = np.array(resized_images)
+        masks = np.array(resized_masks)
+    else:
+        images = images_orig
+        masks = masks_orig
+    
+    # Add channel dimension to images if needed
+    if images.ndim == 3:
+        images = np.expand_dims(images, axis=-1)
+    
+    print(f"Final Duke image shape: {images.shape}")
+    print(f"Final Duke mask shape: {masks.shape}")
+    print(f"Final Duke mask classes: {np.unique(masks)}")
+    
+    return images, masks
 
+
+def combine_datasets(datasets_info):
+    """
+    Combine multiple datasets into a single training dataset.
+    
+    Args:
+        datasets_info (list): List of tuples (images, masks, dataset_name)
+    
+    Returns:
+        tuple: (combined_images, combined_masks)
+    """
+    all_images = []
+    all_masks = []
+    
+    for images, masks, name in datasets_info:
+        print(f"Adding {name} dataset: {len(images)} samples")
+        all_images.append(images)
+        all_masks.append(masks)
+    
+    combined_images = np.concatenate(all_images, axis=0)
+    combined_masks = np.concatenate(all_masks, axis=0)
+    
+    print(f"Combined dataset: {len(combined_images)} total samples")
+    return combined_images, combined_masks
 
 
 def dice_loss(pred, target, smooth=1e-6):
@@ -279,18 +381,50 @@ def plot_segmentation_results(model, images, masks, num_samples=3, save_dir="seg
             plt.close()
 
 if __name__ == "__main__":
-    # Configuration - Focus only on Nemours dataset for mask generation
-    print("Loading Nemours dataset with mask generation...")
+    # Configuration
+    use_nemours_data = True
+    use_duke_data = True
+    max_samples_per_dataset = 700  # Set to number to limit samples, None for all
+
+    # Load datasets
+    datasets = []
     
-    nemours_path = '/home/suraj/Git/SCR-Progression/Nemours_Jing_RL_Annotated.h5'
-    if not os.path.exists(nemours_path):
-        print(f"Nemours dataset not found at {nemours_path}")
+    if use_nemours_data:
+        nemours_path = '/home/suraj/Git/SCR-Progression/Nemours_Jing_RL_Annotated.h5'
+        if os.path.exists(nemours_path):
+            print("Loading Nemours dataset...")
+            nemours_images, nemours_masks = load_nemours_data_with_masks(nemours_path, target_size=(224, 224))
+            if max_samples_per_dataset:
+                nemours_images = nemours_images[:max_samples_per_dataset]
+                nemours_masks = nemours_masks[:max_samples_per_dataset]
+            datasets.append((nemours_images, nemours_masks, "Nemours"))
+        else:
+            print(f"Nemours dataset not found at {nemours_path}")
+    
+    if use_duke_data:
+        duke_path = '/home/suraj/Data/Duke_WLOA_RL_Annotated/Duke_WLOA_Control_normalized_corrected.h5'
+        if os.path.exists(duke_path):
+            print("Loading Duke dataset...")
+            duke_images, duke_masks = load_duke_data_with_masks(duke_path, target_size=(224, 224))
+            if max_samples_per_dataset:
+                duke_images = duke_images[:max_samples_per_dataset]
+                duke_masks = duke_masks[:max_samples_per_dataset]
+            datasets.append((duke_images, duke_masks, "Duke"))
+        else:
+            print(f"Duke dataset not found at {duke_path}")
+    
+    if not datasets:
+        print("No datasets found. Please ensure at least one dataset is available.")
         exit(1)
     
-    # Load Nemours data with masks
-    images, masks = load_nemours_data_with_masks(nemours_path, target_size=(224, 224))
+    # Combine datasets
+    if len(datasets) > 1:
+        images, masks = combine_datasets(datasets)
+    else:
+        images, masks = datasets[0][0], datasets[0][1]
+        print(f"Using single dataset: {datasets[0][2]}")
     
-    print(f"Loaded dataset: {len(images)} samples")
+    print(f"Final dataset: {len(images)} samples")
     print(f"Image shape: {images.shape}")
     print(f"Mask shape: {masks.shape}")
     print(f"Images range: [{images.min():.3f}, {images.max():.3f}]")

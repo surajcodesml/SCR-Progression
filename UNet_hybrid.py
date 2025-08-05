@@ -14,7 +14,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import precision_score, recall_score, f1_score
-from skimage.transform import resize
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -302,53 +301,6 @@ def load_dataset(file_path):
     return images, annotations
 
 
-def generate_annotation_masks(images, layers, height=None, width=None):
-    """
-    Generate segmentation masks from ILM, PR1, and BM layer annotations.
-    Class 0: Background
-    Class 1: ILM to PR1 region
-    Class 2: PR1 to BM region
-    """
-    if height is None:
-        height = images.shape[1]
-    if width is None:
-        width = images.shape[2]
-
-    batch_size = images.shape[0]
-    masks = np.zeros((batch_size, height, width), dtype=np.uint8)
-
-    for b in range(batch_size):
-        ilm_line = layers['ILM'][b]
-        pr1_line = layers['PR1'][b]
-        bm_line = layers['BM'][b]
-
-        for x in range(width):
-            ilm_y = ilm_line[x]
-            pr1_y = pr1_line[x]
-            bm_y = bm_line[x]
-
-            if np.isnan(ilm_y) or np.isnan(pr1_y) or np.isnan(bm_y):
-                continue
-
-            # Convert to integer pixel coordinates and clip to image bounds
-            ilm_y = int(np.clip(round(ilm_y), 0, height-1))
-            pr1_y = int(np.clip(round(pr1_y), 0, height-1))
-            bm_y = int(np.clip(round(bm_y), 0, height-1))
-
-            # Sort to ensure correct order (top < middle < bottom)
-            top, mid, bottom = sorted([ilm_y, pr1_y, bm_y])
-
-            # ILM to PR1 region (Class 1)
-            if top < mid:
-                masks[b, top:mid, x] = 1
-            # PR1 to BM region (Class 2)
-            if mid < bottom:
-                masks[b, mid:bottom, x] = 2
-            # Everything else remains background (Class 0)
-
-    return masks
-
-
 def create_augmentation_pipeline():
     """
     Create augmentation pipeline using Albumentations.
@@ -385,20 +337,14 @@ def preprocess_data(images, annotations, target_size=(512, 256)):
     
     # Initialize preprocessed arrays
     preprocessed_images = np.zeros((batch_size, target_height, target_width, 1))
+    preprocessed_masks = np.zeros((batch_size, target_height, target_width))
     
     # Create augmentation pipeline
     augment = create_augmentation_pipeline()
     
-    # Scaling factors for annotations
+    # Scaling factor for annotations
     width_scale = target_width / original_width
     height_scale = target_height / original_height
-    
-    # First, generate masks at original resolution
-    print("Generating masks at original resolution...")
-    original_masks = generate_annotation_masks(images, annotations)
-    
-    # Initialize preprocessed masks
-    preprocessed_masks = np.zeros((batch_size, target_height, target_width))
     
     for i in range(batch_size):
         # Convert to uint8 and normalize to 0-255 range
@@ -422,17 +368,34 @@ def preprocess_data(images, annotations, target_size=(512, 256)):
         img_grayscale = img_grayscale.astype(np.float32) / 255.0
         preprocessed_images[i, :, :, 0] = img_grayscale
         
-        # Resize mask using nearest neighbor to preserve class labels
-        mask = original_masks[i]
-        resized_mask = resize(mask, target_size, preserve_range=True, 
-                            anti_aliasing=False, order=0)  # order=0 for nearest neighbor
+        # Create combined mask for three layers
+        mask = np.zeros((target_height, target_width))
         
-        # Ensure mask values are integers
-        preprocessed_masks[i] = resized_mask.astype(np.uint8)
+        # Process each layer annotation
+        layer_labels = {'ILM': 1, 'PR1': 2, 'BM': 3}
+        
+        for layer_name, label in layer_labels.items():
+            if layer_name in annotations:
+                layer_coords = annotations[layer_name][i]
+                
+                # Scale and create mask
+                for x in range(len(layer_coords)):
+                    y_coord_raw = layer_coords[x]
+                    
+                    # Skip NaN values
+                    if np.isnan(y_coord_raw):
+                        continue
+                        
+                    y_coord = int(y_coord_raw * height_scale)
+                    x_coord = int(x * width_scale)
+                    
+                    if 0 <= y_coord < target_height and 0 <= x_coord < target_width:
+                        mask[y_coord, x_coord] = label
+        
+        preprocessed_masks[i] = mask
     
     print(f"Preprocessed images shape: {preprocessed_images.shape}")
     print(f"Preprocessed masks shape: {preprocessed_masks.shape}")
-    print(f"Mask classes: {np.unique(preprocessed_masks)}")
     
     return preprocessed_images, preprocessed_masks
 
@@ -762,7 +725,7 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     
     # Step 6: Initialize model
-    model = HybridUNet(input_channels=1, num_classes=3)  # Background + 2 regions (ILM-PR1, PR1-BM)
+    model = HybridUNet(input_channels=1, num_classes=4)  # Background + 3 layers
     
     print("Model Architecture:")
     print(model)
@@ -779,7 +742,7 @@ def main():
             model,
             train_loader,
             val_loader,
-            epochs=10,
+            epochs=30,
             learning_rate=0.001,
             device=device
         )
