@@ -7,6 +7,8 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
 import matplotlib.pyplot as plt
 from skimage.transform import resize
+import json
+from datetime import datetime
 
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -81,6 +83,12 @@ def generate_annotation_masks(images, layers, height=None, width=None):
     Class 0: Background
     Class 1: ILM to PR1 region
     Class 2: PR1 to BM region
+    
+    Args:
+        images: Image array with shape (N, H, W)
+        layers: Dictionary with 'ILM', 'PR1', 'BM' keys containing layer coordinates
+        height: Target height for masks (defaults to image height)
+        width: Target width for masks (defaults to image width)
     """
     if height is None:
         height = images.shape[1]
@@ -89,6 +97,23 @@ def generate_annotation_masks(images, layers, height=None, width=None):
 
     batch_size = images.shape[0]
     masks = np.zeros((batch_size, height, width), dtype=np.uint8)
+
+    # Check if coordinates are normalized (0-1 range) by examining the data
+    ilm_sample = layers['ILM'][0] if len(layers['ILM']) > 0 else []
+    pr1_sample = layers['PR1'][0] if len(layers['PR1']) > 0 else []
+    bm_sample = layers['BM'][0] if len(layers['BM']) > 0 else []
+    
+    # Determine if coordinates are normalized (assume normalized if max value <= 1.0)
+    all_coords = []
+    if len(ilm_sample) > 0:
+        all_coords.extend(ilm_sample[~np.isnan(ilm_sample)])
+    if len(pr1_sample) > 0:
+        all_coords.extend(pr1_sample[~np.isnan(pr1_sample)])
+    if len(bm_sample) > 0:
+        all_coords.extend(bm_sample[~np.isnan(bm_sample)])
+    
+    is_normalized = len(all_coords) > 0 and np.max(all_coords) <= 1.0
+    print(f"Detected {'normalized' if is_normalized else 'pixel'} coordinates (max value: {np.max(all_coords) if all_coords else 'N/A'})")
 
     for b in range(batch_size):
         ilm_line = layers['ILM'][b]
@@ -102,6 +127,12 @@ def generate_annotation_masks(images, layers, height=None, width=None):
 
             if np.isnan(ilm_y) or np.isnan(pr1_y) or np.isnan(bm_y):
                 continue
+
+            # Scale coordinates if they are normalized
+            if is_normalized:
+                ilm_y = ilm_y * height
+                pr1_y = pr1_y * height
+                bm_y = bm_y * height
 
             # Convert to integer pixel coordinates and clip to image bounds
             ilm_y = int(np.clip(round(ilm_y), 0, height-1))
@@ -120,8 +151,6 @@ def generate_annotation_masks(images, layers, height=None, width=None):
             # Everything else remains background (Class 0)
 
     return masks
-
-
 
 def load_nemours_data_with_masks(hdf5_path, target_size=(224, 224)):
     """
@@ -195,7 +224,6 @@ def load_nemours_data_with_masks(hdf5_path, target_size=(224, 224)):
     
     return images, masks
 
-
 def load_duke_data_with_masks(hdf5_path, target_size=(224, 224)):
     """
     Load data from Duke dataset HDF5 file and generate segmentation masks.
@@ -217,12 +245,30 @@ def load_duke_data_with_masks(hdf5_path, target_size=(224, 224)):
     print(f"Duke original image shape: {images_orig.shape}")
     print(f"Duke layer names: {layer_names}")
     
-    # Find indices for ILM, PR1, and BM
-    ilm_idx = layer_names.index('ILM') if 'ILM' in layer_names else 0
-    pr1_idx = next((i for i, name in enumerate(layer_names) if 'PR1' in name), 1)
-    bm_idx = next((i for i, name in enumerate(layer_names) if 'Bruch' in name or 'BM' in name), 2)
+    # Find indices for ILM, PR1/PRE/RPEDC, and BM/Bruch's Membrane
+    # Handle different naming conventions across datasets
+    ilm_idx = None
+    pr1_idx = None  # This could be PR1, PRE, or RPEDC
+    bm_idx = None   # This could be BM or Bruch's Membrane
     
-    print(f"Duke layer indices - ILM: {ilm_idx}, PR1: {pr1_idx}, BM: {bm_idx}")
+    for i, name in enumerate(layer_names):
+        name_upper = name.upper()
+        if 'ILM' in name_upper:
+            ilm_idx = i
+        elif any(layer in name_upper for layer in ['PR1', 'PRE', 'RPEDC', 'PHOTORECEPTOR']):
+            pr1_idx = i
+        elif any(layer in name_upper for layer in ['BM', 'BRUCH', 'MEMBRANE']):
+            bm_idx = i
+    
+    # Validate that we found all required layers
+    if ilm_idx is None:
+        raise ValueError(f"Could not find ILM layer in Duke dataset. Available layers: {layer_names}")
+    if pr1_idx is None:
+        raise ValueError(f"Could not find PR1/PRE/RPEDC layer in Duke dataset. Available layers: {layer_names}")
+    if bm_idx is None:
+        raise ValueError(f"Could not find BM/Bruch's Membrane layer in Duke dataset. Available layers: {layer_names}")
+    
+    print(f"Duke layer indices - ILM: {ilm_idx} ({layer_names[ilm_idx]}), PR1: {pr1_idx} ({layer_names[pr1_idx]}), BM: {bm_idx} ({layer_names[bm_idx]})")
     
     # Extract the three layers we need
     layer_data = {
@@ -230,6 +276,15 @@ def load_duke_data_with_masks(hdf5_path, target_size=(224, 224)):
         'PR1': layer_maps[:, :, pr1_idx], 
         'BM': layer_maps[:, :, bm_idx]
     }
+    
+    # Debug: Print layer coordinate ranges
+    print("Duke layer coordinate ranges:")
+    for layer_name, coords in layer_data.items():
+        valid_coords = coords[~np.isnan(coords)]
+        if len(valid_coords) > 0:
+            print(f"  {layer_name}: [{valid_coords.min():.3f}, {valid_coords.max():.3f}] (mean: {valid_coords.mean():.3f})")
+        else:
+            print(f"  {layer_name}: No valid coordinates found")
     
     # Normalize images to [0, 1] if needed
     if images_orig.max() > 1.0:
@@ -275,7 +330,6 @@ def load_duke_data_with_masks(hdf5_path, target_size=(224, 224)):
     
     return images, masks
 
-
 def combine_datasets(datasets_info):
     """
     Combine multiple datasets into a single training dataset.
@@ -300,7 +354,6 @@ def combine_datasets(datasets_info):
     print(f"Combined dataset: {len(combined_images)} total samples")
     return combined_images, combined_masks
 
-
 def dice_loss(pred, target, smooth=1e-6):
     """Dice loss for segmentation"""
     pred_softmax = torch.softmax(pred, dim=1)
@@ -318,12 +371,21 @@ def segmentation_metrics(pred, target):
     # Calculate per-class metrics
     dice_scores = []
     iou_scores = []
+    precision_scores = []
+    recall_scores = []
+    f1_scores = []
     
     for class_id in range(3):
         pred_mask = (pred_classes == class_id).float()
         target_mask = (target == class_id).float()
         
-        intersection = (pred_mask * target_mask).sum()
+        # True positives, false positives, false negatives
+        tp = (pred_mask * target_mask).sum()
+        fp = (pred_mask * (1 - target_mask)).sum()
+        fn = ((1 - pred_mask) * target_mask).sum()
+        
+        # Dice and IoU
+        intersection = tp
         union = pred_mask.sum() + target_mask.sum()
         
         if union > 0:
@@ -332,11 +394,31 @@ def segmentation_metrics(pred, target):
         else:
             dice = 1.0  # Perfect score if both are empty
             iou = 1.0
+        
+        # Precision, Recall, F1
+        if tp + fp > 0:
+            precision = tp / (tp + fp)
+        else:
+            precision = 1.0 if tp + fn == 0 else 0.0
             
-        dice_scores.append(dice.item())
-        iou_scores.append(iou.item())
+        if tp + fn > 0:
+            recall = tp / (tp + fn)
+        else:
+            recall = 1.0 if tp + fp == 0 else 0.0
+            
+        if precision + recall > 0:
+            f1 = 2 * (precision * recall) / (precision + recall)
+        else:
+            f1 = 0.0
+            
+        dice_scores.append(dice.item() if hasattr(dice, 'item') else float(dice))
+        iou_scores.append(iou.item() if hasattr(iou, 'item') else float(iou))
+        precision_scores.append(precision.item() if hasattr(precision, 'item') else float(precision))
+        recall_scores.append(recall.item() if hasattr(recall, 'item') else float(recall))
+        f1_scores.append(f1.item() if hasattr(f1, 'item') else float(f1))
     
-    return np.mean(dice_scores), np.mean(iou_scores)
+    return (np.mean(dice_scores), np.mean(iou_scores), 
+            np.mean(precision_scores), np.mean(recall_scores), np.mean(f1_scores))
 
 def plot_segmentation_results(model, images, masks, num_samples=3, save_dir="segmentation_results"):
     """Plot segmentation results"""
@@ -464,9 +546,14 @@ if __name__ == "__main__":
     val_losses = []
     val_dice_scores = []
     val_iou_scores = []
+    val_precision_scores = []
+    val_recall_scores = []
+    val_f1_scores = []
 
     n_epochs = 20
     print(f"\nStarting segmentation training for {n_epochs} epochs...")
+    print("Epoch | Train Loss | Val Loss  | Dice    | IoU     | Precision | Recall  | F1      ")
+    print("-" * 80)
     
     for epoch in range(n_epochs):
         # Training phase
@@ -500,6 +587,9 @@ if __name__ == "__main__":
         val_loss = 0.0
         val_dice_list = []
         val_iou_list = []
+        val_precision_list = []
+        val_recall_list = []
+        val_f1_list = []
         
         with torch.no_grad():
             for imgs, targets in test_loader:
@@ -513,20 +603,31 @@ if __name__ == "__main__":
                 val_loss += loss.item()
                 
                 # Calculate metrics
-                dice, iou = segmentation_metrics(outputs, targets)
+                dice, iou, precision, recall, f1 = segmentation_metrics(outputs, targets)
                 val_dice_list.append(dice)
                 val_iou_list.append(iou)
+                val_precision_list.append(precision)
+                val_recall_list.append(recall)
+                val_f1_list.append(f1)
         
         val_loss /= len(test_loader)
         val_dice = np.mean(val_dice_list)
         val_iou = np.mean(val_iou_list)
+        val_precision = np.mean(val_precision_list)
+        val_recall = np.mean(val_recall_list)
+        val_f1 = np.mean(val_f1_list)
         
         val_losses.append(val_loss)
         val_dice_scores.append(val_dice)
         val_iou_scores.append(val_iou)
+        val_precision_scores.append(val_precision)
+        val_recall_scores.append(val_recall)
+        val_f1_scores.append(val_f1)
 
-        print(f"Epoch {epoch+1}/{n_epochs}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
-        print(f"  Val Dice: {val_dice:.4f}, Val IoU: {val_iou:.4f}")
+        # Print metrics for current epoch
+        print(f"{epoch+1:5d} | {train_loss:10.4f} | {val_loss:9.4f} | {val_dice:7.4f} | {val_iou:7.4f} | {val_precision:9.4f} | {val_recall:7.4f} | {val_f1:7.4f}")
+
+    print("-" * 80)
 
     # Save model and generate visualizations
     torch.save(model.state_dict(), "CNN_segmentation_model.pth")
@@ -538,38 +639,109 @@ if __name__ == "__main__":
     
     plot_segmentation_results(model, X_test, y_test, num_samples=3, save_dir="segmentation_logs")
     
-    # Plot training metrics
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    # Create comprehensive 4-plot visualization
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     
-    axes[0].plot(range(1, n_epochs+1), train_losses, label='Train Loss')
-    axes[0].plot(range(1, n_epochs+1), val_losses, label='Val Loss')
-    axes[0].set_xlabel('Epoch')
-    axes[0].set_ylabel('Loss')
-    axes[0].set_title('Training and Validation Loss')
-    axes[0].legend()
-    axes[0].grid(True)
+    # Plot 1: Dice and IoU scores
+    axes[0, 0].plot(range(1, n_epochs+1), val_dice_scores, 'b-', label='Dice Score', linewidth=2)
+    axes[0, 0].plot(range(1, n_epochs+1), val_iou_scores, 'r-', label='IoU Score', linewidth=2)
+    axes[0, 0].set_xlabel('Epoch')
+    axes[0, 0].set_ylabel('Score')
+    axes[0, 0].set_title('Dice and IoU Scores per Epoch')
+    axes[0, 0].legend()
+    axes[0, 0].grid(True, alpha=0.3)
+    axes[0, 0].set_ylim(0, 1)
     
-    axes[1].plot(range(1, n_epochs+1), val_dice_scores, label='Dice Score')
-    axes[1].set_xlabel('Epoch')
-    axes[1].set_ylabel('Dice Score')
-    axes[1].set_title('Validation Dice Score')
-    axes[1].legend()
-    axes[1].grid(True)
+    # Plot 2: Training and Validation Loss
+    axes[0, 1].plot(range(1, n_epochs+1), train_losses, 'g-', label='Train Loss', linewidth=2)
+    axes[0, 1].plot(range(1, n_epochs+1), val_losses, 'orange', label='Val Loss', linewidth=2)
+    axes[0, 1].set_xlabel('Epoch')
+    axes[0, 1].set_ylabel('Loss')
+    axes[0, 1].set_title('Training and Validation Loss per Epoch')
+    axes[0, 1].legend()
+    axes[0, 1].grid(True, alpha=0.3)
     
-    axes[2].plot(range(1, n_epochs+1), val_iou_scores, label='IoU Score')
-    axes[2].set_xlabel('Epoch')
-    axes[2].set_ylabel('IoU Score')
-    axes[2].set_title('Validation IoU Score')
-    axes[2].legend()
-    axes[2].grid(True)
+    # Plot 3: F1 Score
+    axes[1, 0].plot(range(1, n_epochs+1), val_f1_scores, 'purple', label='F1 Score', linewidth=2)
+    axes[1, 0].set_xlabel('Epoch')
+    axes[1, 0].set_ylabel('F1 Score')
+    axes[1, 0].set_title('F1 Score per Epoch')
+    axes[1, 0].legend()
+    axes[1, 0].grid(True, alpha=0.3)
+    axes[1, 0].set_ylim(0, 1)
+    
+    # Plot 4: Precision and Recall
+    axes[1, 1].plot(range(1, n_epochs+1), val_precision_scores, 'cyan', label='Precision', linewidth=2)
+    axes[1, 1].plot(range(1, n_epochs+1), val_recall_scores, 'magenta', label='Recall', linewidth=2)
+    axes[1, 1].set_xlabel('Epoch')
+    axes[1, 1].set_ylabel('Score')
+    axes[1, 1].set_title('Precision and Recall per Epoch')
+    axes[1, 1].legend()
+    axes[1, 1].grid(True, alpha=0.3)
+    axes[1, 1].set_ylim(0, 1)
     
     plt.tight_layout()
     os.makedirs("segmentation_logs", exist_ok=True)
-    plt.savefig("segmentation_logs/training_metrics.png", bbox_inches='tight', dpi=150)
+    plt.savefig("segmentation_logs/comprehensive_training_metrics.png", bbox_inches='tight', dpi=150)
     plt.close()
+    
+    # Save hyperparameters and performance metrics to JSON
+    results = {
+        "experiment_info": {
+            "timestamp": datetime.now().isoformat(),
+            "model_name": "LayerSegmentationCNN",
+            "datasets_used": [dataset[2] for dataset in datasets],
+            "total_samples": len(images),
+            "target_size": [224, 224]
+        },
+        "hyperparameters": {
+            "num_classes": 3,
+            "num_epochs": n_epochs,
+            "batch_size": 8,
+            "learning_rate": 1e-4,
+            "train_test_split": {"train": n_train, "test": n_test},
+            "optimizer": "Adam",
+            "loss_function": "CrossEntropyLoss + DiceLoss",
+            "max_samples_per_dataset": max_samples_per_dataset
+        },
+        "training_metrics": {
+            "train_losses": train_losses,
+            "val_losses": val_losses,
+            "val_dice_scores": val_dice_scores,
+            "val_iou_scores": val_iou_scores,
+            "val_precision_scores": val_precision_scores,
+            "val_recall_scores": val_recall_scores,
+            "val_f1_scores": val_f1_scores
+        },
+        "final_performance": {
+            "final_dice_score": val_dice_scores[-1],
+            "final_iou_score": val_iou_scores[-1],
+            "final_precision": val_precision_scores[-1],
+            "final_recall": val_recall_scores[-1],
+            "final_f1_score": val_f1_scores[-1],
+            "best_dice_score": max(val_dice_scores),
+            "best_iou_score": max(val_iou_scores),
+            "best_f1_score": max(val_f1_scores),
+            "best_dice_epoch": val_dice_scores.index(max(val_dice_scores)) + 1,
+            "best_iou_epoch": val_iou_scores.index(max(val_iou_scores)) + 1,
+            "best_f1_epoch": val_f1_scores.index(max(val_f1_scores)) + 1
+        }
+    }
+    
+    # Save results to JSON file
+    with open("segmentation_logs/training_results.json", "w") as f:
+        json.dump(results, f, indent=2)
     
     print("Training complete. Model saved as 'CNN_segmentation_model.pth'.")
     print("Visualizations saved in 'segmentation_logs/' directory.")
+    print("Training results saved to 'segmentation_logs/training_results.json'.")
     print(f"\nFinal Performance Summary:")
     print(f"  Final Dice Score: {val_dice_scores[-1]:.4f}")
     print(f"  Final IoU Score: {val_iou_scores[-1]:.4f}")
+    print(f"  Final Precision: {val_precision_scores[-1]:.4f}")
+    print(f"  Final Recall: {val_recall_scores[-1]:.4f}")
+    print(f"  Final F1 Score: {val_f1_scores[-1]:.4f}")
+    print(f"\nBest Performance Achieved:")
+    print(f"  Best Dice Score: {max(val_dice_scores):.4f} (Epoch {val_dice_scores.index(max(val_dice_scores)) + 1})")
+    print(f"  Best IoU Score: {max(val_iou_scores):.4f} (Epoch {val_iou_scores.index(max(val_iou_scores)) + 1})")
+    print(f"  Best F1 Score: {max(val_f1_scores):.4f} (Epoch {val_f1_scores.index(max(val_f1_scores)) + 1})")
