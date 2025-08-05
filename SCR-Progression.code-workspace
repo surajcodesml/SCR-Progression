@@ -4,10 +4,10 @@
 			"path": "."
 		},
 		{
-			"path": "../../Data/Duke_WLOA_RL_Annotated"
+			"path": "../../Data"
 		},
 		{
-			"path": "../../Data"
+			"path": "../Attention-Based-UNet"
 		}
 	]
 }
