@@ -465,14 +465,20 @@ def plot_segmentation_results(model, images, masks, num_samples=3, save_dir="seg
 if __name__ == "__main__":
     # Configuration
     use_nemours_data = True
-    use_duke_data = False
-    max_samples_per_dataset = None  # Set to number to limit samples, None for all
+    use_duke_data = True
+    max_samples_per_dataset = 700  # Set to number to limit samples, None for all
+
+    # Create timestamped log directory
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_dir = f"logs/segmentation_run_{timestamp}"
+    os.makedirs(log_dir, exist_ok=True)
+    print(f"Logging to directory: {log_dir}")
 
     # Load datasets
     datasets = []
     
     if use_nemours_data:
-        nemours_path = '/home/suraj/Git/SCR-Progression/Nemours_Jing_RL_Annotated.h5'
+        nemours_path = '/home/suraj/Git/SCR-Progression/e2e/Nemours_Jing_0805.h5'
         if os.path.exists(nemours_path):
             print("Loading Nemours dataset...")
             nemours_images, nemours_masks = load_nemours_data_with_masks(nemours_path, target_size=(224, 224))
@@ -630,14 +636,15 @@ if __name__ == "__main__":
     print("-" * 80)
 
     # Save model and generate visualizations
-    torch.save(model.state_dict(), "CNN_segmentation_model.pth")
+    model_path = os.path.join(log_dir, "CNN_segmentation_model.pth")
+    torch.save(model.state_dict(), model_path)
     print("\nGenerating visualizations...")
     
     # Get test samples for visualization
     X_test = np.array([test_set[i][0].numpy().transpose(1, 2, 0) for i in range(min(3, n_test))])
     y_test = np.array([test_set[i][1].numpy() for i in range(min(3, n_test))])
     
-    plot_segmentation_results(model, X_test, y_test, num_samples=3, save_dir="segmentation_logs")
+    plot_segmentation_results(model, X_test, y_test, num_samples=3, save_dir=log_dir)
     
     # Create comprehensive 4-plot visualization
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
@@ -681,8 +688,8 @@ if __name__ == "__main__":
     axes[1, 1].set_ylim(0, 1)
     
     plt.tight_layout()
-    os.makedirs("segmentation_logs", exist_ok=True)
-    plt.savefig("segmentation_logs/comprehensive_training_metrics.png", bbox_inches='tight', dpi=150)
+    metrics_plot_path = os.path.join(log_dir, "comprehensive_training_metrics.png")
+    plt.savefig(metrics_plot_path, bbox_inches='tight', dpi=150)
     plt.close()
     
     # Save hyperparameters and performance metrics to JSON
@@ -729,12 +736,13 @@ if __name__ == "__main__":
     }
     
     # Save results to JSON file
-    with open("segmentation_logs/training_results.json", "w") as f:
+    results_path = os.path.join(log_dir, "training_results.json")
+    with open(results_path, "w") as f:
         json.dump(results, f, indent=2)
     
-    print("Training complete. Model saved as 'CNN_segmentation_model.pth'.")
-    print("Visualizations saved in 'segmentation_logs/' directory.")
-    print("Training results saved to 'segmentation_logs/training_results.json'.")
+    print(f"Training complete. Model saved as '{model_path}'.")
+    print(f"Visualizations saved in '{log_dir}/' directory.")
+    print(f"Training results saved to '{results_path}'.")
     print(f"\nFinal Performance Summary:")
     print(f"  Final Dice Score: {val_dice_scores[-1]:.4f}")
     print(f"  Final IoU Score: {val_iou_scores[-1]:.4f}")
