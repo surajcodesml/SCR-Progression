@@ -255,20 +255,10 @@ def load_duke_data_with_masks(hdf5_path, target_size=(224, 224)):
         name_upper = name.upper()
         if 'ILM' in name_upper:
             ilm_idx = i
-        elif any(layer in name_upper for layer in ['PR1', 'PRE', 'RPEDC', 'PHOTORECEPTOR']):
+        elif any(layer in name_upper for layer in ['PR1', 'PRE', 'RPEDC', 'PHOTORECEPTOR']): #DEBUG: only take one layer name that is PR1: confirm pr1 present
             pr1_idx = i
-        elif any(layer in name_upper for layer in ['BM', 'BRUCH', 'MEMBRANE']):
+        elif any(layer in name_upper for layer in ['BM', 'BRUCH', 'MEMBRANE', "Bruch's Membrane"]):
             bm_idx = i
-    
-    # Validate that we found all required layers
-    if ilm_idx is None:
-        raise ValueError(f"Could not find ILM layer in Duke dataset. Available layers: {layer_names}")
-    if pr1_idx is None:
-        raise ValueError(f"Could not find PR1/PRE/RPEDC layer in Duke dataset. Available layers: {layer_names}")
-    if bm_idx is None:
-        raise ValueError(f"Could not find BM/Bruch's Membrane layer in Duke dataset. Available layers: {layer_names}")
-    
-    print(f"Duke layer indices - ILM: {ilm_idx} ({layer_names[ilm_idx]}), PR1: {pr1_idx} ({layer_names[pr1_idx]}), BM: {bm_idx} ({layer_names[bm_idx]})")
     
     # Extract the three layers we need
     layer_data = {
@@ -277,7 +267,7 @@ def load_duke_data_with_masks(hdf5_path, target_size=(224, 224)):
         'BM': layer_maps[:, :, bm_idx]
     }
     
-    # Debug: Print layer coordinate ranges
+# Debug: Print layer coordinate ranges
     print("Duke layer coordinate ranges:")
     for layer_name, coords in layer_data.items():
         valid_coords = coords[~np.isnan(coords)]
@@ -470,7 +460,7 @@ if __name__ == "__main__":
 
     # Create timestamped log directory
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_dir = f"logs/segmentation_run_{timestamp}"
+    log_dir = f"logs/{timestamp}_CNN_mask_pytorch"
     os.makedirs(log_dir, exist_ok=True)
     print(f"Logging to directory: {log_dir}")
 
@@ -636,7 +626,8 @@ if __name__ == "__main__":
     print("-" * 80)
 
     # Save model and generate visualizations
-    model_path = os.path.join(log_dir, "CNN_segmentation_model.pth")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    model_path = os.path.join(log_dir, f"CNN_mask_pytorch_model_{timestamp}.pth")
     torch.save(model.state_dict(), model_path)
     print("\nGenerating visualizations...")
     
@@ -688,7 +679,7 @@ if __name__ == "__main__":
     axes[1, 1].set_ylim(0, 1)
     
     plt.tight_layout()
-    metrics_plot_path = os.path.join(log_dir, "comprehensive_training_metrics.png")
+    metrics_plot_path = os.path.join(log_dir, f"{timestamp}_training_metrics.png")
     plt.savefig(metrics_plot_path, bbox_inches='tight', dpi=150)
     plt.close()
     
