@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-from torch.cuda.amp import GradScaler, autocast
+from torch.amp import GradScaler, autocast
 from pycm import ConfusionMatrix
 import uuid
 from sklearn.model_selection import KFold
