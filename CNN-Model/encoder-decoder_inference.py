@@ -318,7 +318,16 @@ def save_sample_predictions(model, images, masks, indices, save_dir, num_samples
             
             # Convert to predicted mask
             pred_mask = torch.argmax(pred_logits, dim=1).cpu().numpy()[0]
-            
+        
+            print(pred_mask)
+            print(" ")
+            # DEBUG: Store all the annoations predictions acc to the volume.
+            #write pred_mask in a .json file
+            #create and write directory
+            os.makedirs('CNN-Model/inference', exist_ok=True)
+            with open(f'CNN-Model/inference/predictions_{idx}.json', 'w') as f:
+                json.dump(pred_mask.tolist(), f, indent=4)
+
             # Original image
             axes[i, 0].imshow(img[:, :, 0], cmap='gray')
             axes[i, 0].set_title(f'Sample {idx}: Original')
@@ -348,7 +357,7 @@ def main():
     model_path = "logs/20250811_165551_CNN_mask_pytorch/CNN_mask_pytorch_model_20250811_170204.pth"
     duke_path = '/home/suraj/Data/Duke_WLOA_RL_Annotated/Duke_WLOA_Control_normalized_corrected.h5'
     batch_size = 4  # Conservative for GTX 1650 Ti 4GB
-    num_test_samples = 2000  # Test on last 2000 images
+    num_test_samples = 20  # Test on last 2000 images
     target_size = (224, 224)
     
     # Create results directory
