@@ -1,0 +1,16 @@
+{
+  "unique_volumes": [
+    "242_L_1",
+    "247_L_1_1"
+  ],
+  "volume_counts": {
+    "242_L_1": 31,
+    "247_L_1_1": 19
+  },
+  "total_volumes": 2,
+  "total_bscans": 50,
+  "heatmaps_generated": [
+    "242_L_1",
+    "247_L_1_1"
+  ]
+}

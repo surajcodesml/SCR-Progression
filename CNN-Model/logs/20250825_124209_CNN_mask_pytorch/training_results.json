@@ -1,0 +1,77 @@
+{
+  "experiment_info": {
+    "timestamp": "2025-08-25T12:42:47.401334",
+    "model_name": "LayerSegmentationCNN",
+    "datasets_used": [
+      "Nemours"
+    ],
+    "total_samples": 50,
+    "target_size": [
+      224,
+      224
+    ]
+  },
+  "hyperparameters": {
+    "num_classes": 3,
+    "num_epochs": 3,
+    "batch_size": 8,
+    "learning_rate": 0.0001,
+    "train_test_split": {
+      "train": 40,
+      "test": 10
+    },
+    "optimizer": "Adam",
+    "loss_function": "CrossEntropyLoss + DiceLoss",
+    "max_samples_per_dataset": 50
+  },
+  "training_metrics": {
+    "train_losses": [
+      1.8380476713180542,
+      1.8330359697341918,
+      1.8279922962188722
+    ],
+    "val_losses": [
+      1.8364336490631104,
+      1.831369936466217,
+      1.8262993097305298
+    ],
+    "val_dice_scores": [
+      0.05986603610290331,
+      0.06339519020790856,
+      0.06517620043208203
+    ],
+    "val_iou_scores": [
+      0.03288491890331594,
+      0.034680237915987774,
+      0.03559389097305636
+    ],
+    "val_precision_scores": [
+      0.36620311314860976,
+      0.36189040169119835,
+      0.36343215157588327
+    ],
+    "val_recall_scores": [
+      0.3333484724213728,
+      0.334865850629285,
+      0.33570607006549835
+    ],
+    "val_f1_scores": [
+      0.05986603610290331,
+      0.06339519269143541,
+      0.06517619530980787
+    ]
+  },
+  "final_performance": {
+    "final_dice_score": 0.06517620043208203,
+    "final_iou_score": 0.03559389097305636,
+    "final_precision": 0.36343215157588327,
+    "final_recall": 0.33570607006549835,
+    "final_f1_score": 0.06517619530980787,
+    "best_dice_score": 0.06517620043208203,
+    "best_iou_score": 0.03559389097305636,
+    "best_f1_score": 0.06517619530980787,
+    "best_dice_epoch": 3,
+    "best_iou_epoch": 3,
+    "best_f1_epoch": 3
+  }
+}

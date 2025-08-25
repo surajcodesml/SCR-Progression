@@ -161,14 +161,13 @@ def load_nemours_data_with_masks(hdf5_path, target_size=(224, 224)):
         target_size (tuple): Target size for images and masks (height, width)
     
     Returns:
-        tuple: (images, masks, names) where images have shape (N, H, W, 1), 
-               masks have shape (N, H, W) with classes 0,1,2, and names contains volume names
+        tuple: (images, masks) where images have shape (N, H, W, 1) 
+               and masks have shape (N, H, W) with classes 0,1,2
     """
     with h5py.File(hdf5_path, 'r') as f:
         # Load images and layers at original resolution
         images_orig = f['images'][:]  # Shape: (310, 496, 768)
         layers = f['layers']
-        names = f['names'][:]  # Load volume names
         
         # Extract ILM, PR1, BM layers
         layer_data = {
@@ -223,10 +222,7 @@ def load_nemours_data_with_masks(hdf5_path, target_size=(224, 224)):
     print(f"Final resized mask shape: {masks.shape}")
     print(f"Final mask classes: {np.unique(masks)}")
     
-    # Decode names to strings
-    volume_names = [name.decode('utf-8') for name in names]
-    
-    return images, masks, volume_names
+    return images, masks
 
 def load_duke_data_with_masks(hdf5_path, target_size=(224, 224)):
     """
@@ -414,194 +410,6 @@ def segmentation_metrics(pred, target):
     return (np.mean(dice_scores), np.mean(iou_scores), 
             np.mean(precision_scores), np.mean(recall_scores), np.mean(f1_scores))
 
-def extract_layer_boundaries_from_segmentation(segmentation_mask):
-    """
-    Extract ILM and BM layer boundaries from segmentation mask.
-    Class 0: Background
-    Class 1: ILM to PR1 region
-    Class 2: PR1 to BM region
-    
-    Args:
-        segmentation_mask: numpy array of shape (H, W) with class labels 0, 1, 2
-    
-    Returns:
-        dict: Dictionary with 'ILM' and 'BM' keys containing y-coordinates for each x position
-    """
-    height, width = segmentation_mask.shape
-    boundaries = {
-        'ILM': np.full(width, np.nan),
-        'BM': np.full(width, np.nan)
-    }
-    
-    for x in range(width):
-        column = segmentation_mask[:, x]
-        
-        # Find ILM (top boundary of class 1 region)
-        class1_indices = np.where(column == 1)[0]
-        if len(class1_indices) > 0:
-            boundaries['ILM'][x] = class1_indices[0]  # First occurrence (top)
-        
-        # Find BM (bottom boundary of class 2 region)
-        class2_indices = np.where(column == 2)[0]
-        if len(class2_indices) > 0:
-            boundaries['BM'][x] = class2_indices[-1]  # Last occurrence (bottom)
-    
-    return boundaries
-
-
-def scale_boundaries_to_original_size(boundaries, original_size=(496, 768), model_size=(224, 224)):
-    """
-    Scale predicted boundaries from model size back to original image size.
-    Uses the same scaling logic as the existing resize function.
-    
-    Args:
-        boundaries: Dictionary with 'ILM' and 'BM' keys containing coordinates
-        original_size: Target size (height, width) to scale to
-        model_size: Current size (height, width) of the boundaries
-    
-    Returns:
-        dict: Scaled boundaries
-    """
-    orig_height, orig_width = original_size
-    model_height, model_width = model_size
-    
-    scaled_boundaries = {}
-    
-    for layer_name, coords in boundaries.items():
-        # Scale x-coordinates from model_width to orig_width
-        scaled_coords = np.full(orig_width, np.nan)
-        
-        for model_x in range(len(coords)):
-            if not np.isnan(coords[model_x]):
-                # Scale x coordinate
-                orig_x = int((model_x / model_width) * orig_width)
-                if orig_x < orig_width:
-                    # Scale y coordinate
-                    orig_y = (coords[model_x] / model_height) * orig_height
-                    scaled_coords[orig_x] = orig_y
-        
-        # Interpolate missing values for smoother curves
-        valid_indices = ~np.isnan(scaled_coords)
-        if np.sum(valid_indices) > 1:
-            x_valid = np.where(valid_indices)[0]
-            y_valid = scaled_coords[valid_indices]
-            x_all = np.arange(orig_width)
-            scaled_coords = np.interp(x_all, x_valid, y_valid, left=np.nan, right=np.nan)
-        
-        scaled_boundaries[layer_name] = scaled_coords
-    
-    return scaled_boundaries
-
-
-def store_predictions_with_order(model, dataset, indices, names_array, save_path, batch_size=8):
-    """
-    Generate predictions for the entire dataset and store them in the original order.
-    Extracts ILM and BM boundaries and scales them back to original image size.
-    
-    Args:
-        model: Trained segmentation model
-        dataset: Dataset object (using original unshuffled data)
-        indices: Sequential indices (should be np.arange(len(dataset)))
-        names_array: Array of volume names in original order
-        save_path: Path to save the numpy arrays
-        batch_size: Batch size for inference
-    
-    Returns:
-        dict: Dictionary containing all predictions and metadata
-    """
-    model.eval()
-    
-    # Create data loader without shuffling to maintain order
-    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-    
-    all_predictions = []
-    all_boundaries_224 = []
-    all_boundaries_original = []
-    
-    print(f"Generating predictions for {len(dataset)} samples...")
-    
-    with torch.no_grad():
-        for batch_idx, (imgs, true_masks) in enumerate(data_loader):
-            imgs = imgs.to(device)
-            
-            # Get predictions
-            outputs = model(imgs)
-            pred_masks = torch.argmax(outputs, dim=1).cpu().numpy()
-            
-            # Process each sample in the batch
-            for i in range(len(pred_masks)):
-                pred_mask = pred_masks[i]
-                all_predictions.append(pred_mask)
-                
-                # Extract boundaries at model resolution (224x224)
-                boundaries_224 = extract_layer_boundaries_from_segmentation(pred_mask)
-                all_boundaries_224.append(boundaries_224)
-                
-                # Scale boundaries to original resolution (496x768)
-                boundaries_original = scale_boundaries_to_original_size(
-                    boundaries_224, original_size=(496, 768), model_size=(224, 224)
-                )
-                all_boundaries_original.append(boundaries_original)
-            
-            if (batch_idx + 1) % 10 == 0:
-                print(f"Processed {(batch_idx + 1) * batch_size} samples...")
-    
-    # Convert to numpy arrays - data is already in correct order
-    all_predictions = np.array(all_predictions)
-    
-    # Convert boundary lists to numpy arrays for easier handling
-    ilm_coords_224 = np.array([b['ILM'] for b in all_boundaries_224])
-    bm_coords_224 = np.array([b['BM'] for b in all_boundaries_224])
-    ilm_coords_original = np.array([b['ILM'] for b in all_boundaries_original])
-    bm_coords_original = np.array([b['BM'] for b in all_boundaries_original])
-    
-    # Save all data
-    print(f"Saving predictions to {save_path}...")
-    
-    # Create a structured save with multiple files
-    base_path = save_path.replace('.npz', '')
-    
-    # Save predictions and boundaries
-    np.savez(f"{base_path}_predictions.npz",
-             segmentation_masks=all_predictions,
-             ilm_224=ilm_coords_224,
-             bm_224=bm_coords_224,
-             ilm_original=ilm_coords_original,
-             bm_original=bm_coords_original,
-             volume_names=names_array,
-             timestamp=datetime.now().isoformat())
-    
-    print(f"Saved {len(all_predictions)} predictions to {base_path}_predictions.npz")
-    
-    return {
-        'segmentation_masks': all_predictions,
-        'boundaries_224': {'ILM': ilm_coords_224, 'BM': bm_coords_224},
-        'boundaries_original': {'ILM': ilm_coords_original, 'BM': bm_coords_original},
-        'volume_names': names_array
-    }
-
-
-def list_unique_volumes(names, max_display=10):
-    """List unique volume names in the dataset"""
-    unique_names = {}
-    for i, name in enumerate(names):
-        if name not in unique_names:
-            unique_names[name] = []
-        unique_names[name].append(i)
-    
-    print(f"Unique volumes ({len(unique_names)} total):")
-    displayed = 0
-    for vol_name, indices in unique_names.items():
-        if displayed < max_display:
-            print(f"  '{vol_name}': {len(indices)} B-scans")
-            displayed += 1
-        elif displayed == max_display:
-            print(f"  ... and {len(unique_names) - max_display} more volumes")
-            break
-    
-    return list(unique_names.keys())
-
-
 def plot_segmentation_results(model, images, masks, num_samples=3, save_dir="segmentation_results"):
     """Plot segmentation results"""
     model.eval()
@@ -647,8 +455,8 @@ def plot_segmentation_results(model, images, masks, num_samples=3, save_dir="seg
 if __name__ == "__main__":
     # Configuration
     use_nemours_data = True
-    use_duke_data = False  # Set to False to enable heatmap generation with volume names
-    max_samples_per_dataset = None  # Set to number to limit samples, None for all
+    use_duke_data = True
+    max_samples_per_dataset = 700  # Set to number to limit samples, None for all
 
     # Create timestamped log directory
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -658,17 +466,15 @@ if __name__ == "__main__":
 
     # Load datasets
     datasets = []
-    nemours_names = None  # Store Nemours volume names
     
     if use_nemours_data:
         nemours_path = '/home/suraj/Git/SCR-Progression/e2e/Nemours_Jing_0805.h5'
         if os.path.exists(nemours_path):
             print("Loading Nemours dataset...")
-            nemours_images, nemours_masks, nemours_names = load_nemours_data_with_masks(nemours_path, target_size=(224, 224))
+            nemours_images, nemours_masks = load_nemours_data_with_masks(nemours_path, target_size=(224, 224))
             if max_samples_per_dataset:
                 nemours_images = nemours_images[:max_samples_per_dataset]
                 nemours_masks = nemours_masks[:max_samples_per_dataset]
-                nemours_names = nemours_names[:max_samples_per_dataset]
             datasets.append((nemours_images, nemours_masks, "Nemours"))
         else:
             print(f"Nemours dataset not found at {nemours_path}")
@@ -692,15 +498,8 @@ if __name__ == "__main__":
     # Combine datasets
     if len(datasets) > 1:
         images, masks = combine_datasets(datasets)
-        # For simplicity, we'll only create heatmaps for Nemours data when using mixed datasets
-        current_names = None
     else:
         images, masks = datasets[0][0], datasets[0][1]
-        # If using only Nemours dataset, preserve the names
-        if datasets[0][2] == "Nemours" and nemours_names is not None:
-            current_names = nemours_names
-        else:
-            current_names = None
         print(f"Using single dataset: {datasets[0][2]}")
     
     print(f"Final dataset: {len(images)} samples")
@@ -718,21 +517,10 @@ if __name__ == "__main__":
         print("⚠️  NaN values found in masks - fixing...")
         masks = np.nan_to_num(masks, nan=0)
     
-    # Store original data and names before shuffling for prediction generation
-    original_images = images.copy()
-    original_masks = masks.copy()
-    original_names = current_names.copy() if current_names is not None else None
-    
-    # Store original indices before shuffling for maintaining order
-    original_indices = np.arange(len(images))
-    
-    # Shuffle the dataset for training
+    # Shuffle the dataset
     indices = np.random.permutation(len(images))
     images = images[indices]
     masks = masks[indices]
-    # Reorder names if available (for training)
-    if current_names is not None:
-        current_names = [current_names[i] for i in indices]
     
     # Split data
     dataset = LayerAnnotationDataset(images, masks)
@@ -758,7 +546,7 @@ if __name__ == "__main__":
     val_recall_scores = []
     val_f1_scores = []
 
-    n_epochs = 50  # Quick test with 3 epochs
+    n_epochs = 50
     print(f"\nStarting segmentation training for {n_epochs} epochs...")
     print("Epoch | Train Loss | Val Loss  | Dice    | IoU     | Precision | Recall  | F1      ")
     print("-" * 80)
@@ -956,53 +744,3 @@ if __name__ == "__main__":
     print(f"  Best Dice Score: {max(val_dice_scores):.4f} (Epoch {val_dice_scores.index(max(val_dice_scores)) + 1})")
     print(f"  Best IoU Score: {max(val_iou_scores):.4f} (Epoch {val_iou_scores.index(max(val_iou_scores)) + 1})")
     print(f"  Best F1 Score: {max(val_f1_scores):.4f} (Epoch {val_f1_scores.index(max(val_f1_scores)) + 1})")
-    
-    # Generate and store predictions if we have Nemours data with names
-    if original_names is not None:
-        print(f"\n{'='*60}")
-        print("Generating predictions and creating heatmaps for Nemours dataset...")
-        print(f"{'='*60}")
-        
-        # Create a full dataset for prediction using ORIGINAL unshuffled data
-        full_dataset = LayerAnnotationDataset(original_images, original_masks)
-        
-        # Save predictions in original order
-        predictions_path = os.path.join(log_dir, f"predictions_{timestamp}")
-        
-        predictions_data = store_predictions_with_order(
-            model=model,
-            dataset=full_dataset,
-            indices=np.arange(len(original_images)),  # Use sequential indices for original data
-            names_array=np.array(original_names),     # Use original unshuffled names
-            save_path=predictions_path,
-            batch_size=8
-        )
-        
-        # List available volumes for prediction analysis
-        unique_volumes = list_unique_volumes(original_names)
-        
-        print(f"\n✅ Prediction storage completed!")
-        print(f"📁 Predictions saved to: {predictions_path}_predictions.npz")
-        print(f"� Use pred_heatmaps_data_ops.ipynb to analyze the saved predictions")
-        
-        # Save volume information
-        volume_info = {
-            "unique_volumes": unique_volumes,
-            "volume_counts": {vol: original_names.count(vol) for vol in unique_volumes},
-            "total_volumes": len(unique_volumes),
-            "total_bscans": len(original_names),
-            "predictions_saved": True
-        }
-        
-        volume_info_path = os.path.join(log_dir, "volume_info.json")
-        with open(volume_info_path, "w") as f:
-            json.dump(volume_info, f, indent=2)
-        
-        print(f"📋 Volume information saved to: {volume_info_path}")
-    
-    else:
-        print(f"\n⚠️  No volume names available - skipping prediction storage.")
-        print(f"To generate predictions with volume info, use only Nemours dataset (set use_duke_data=False)")
-    
-    print(f"\n🎯 All processing completed!")
-    print(f"📂 All outputs saved in: {log_dir}")
