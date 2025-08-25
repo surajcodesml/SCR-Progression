@@ -249,3 +249,7 @@ __marimo__/
 *.pt
 *.ckpt
 *.onnx
+
+#ignore numpy array files
+*.npy
+*.npz
